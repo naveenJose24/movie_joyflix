@@ -12,6 +12,8 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <!-- Capacitor Bridge -->
   <script src="capacitor.js"></script>
+  <!-- PeerJS -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
 
@@ -30,6 +32,7 @@
     </ul>
 
     <div class="nav-right">
+      <div class="remote-code-display" id="remoteCodeDisplay" title="Remote Pairing Code">Remote: <span id="remoteCodeSpan">----</span></div>
       <div class="search-wrap">
         <i class="ph ph-magnifying-glass search-icon" id="searchToggle" title="Search"></i>
         <input type="text" id="searchInput" placeholder="Search movies, shows…" autocomplete="off" />

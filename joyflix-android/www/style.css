@@ -43,6 +43,40 @@ body {
     overflow-x: hidden;
 }
 
+/* ── TV Focus / Spatial Navigation Indicator ───────────────────────── */
+:focus, :focus-visible, .tv-focused {
+    outline: 4px solid var(--white) !important;
+    outline-offset: 4px !important;
+    border-radius: inherit;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2) !important;
+    z-index: 500 !important;
+    position: relative;
+}
+
+.tv-focused::after {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px 8px 0;
+    border-style: solid;
+    border-color: var(--white) transparent transparent transparent;
+    filter: drop-shadow(0 -3px 5px rgba(255,255,255,0.5));
+    animation: tvBounce 0.8s infinite alternate ease-in-out;
+    pointer-events: none;
+    z-index: 501;
+}
+
+@keyframes tvBounce {
+    from { transform: translateX(-50%) translateY(0); }
+    to { transform: translateX(-50%) translateY(5px); }
+}
+
+.card:focus, .card:focus-visible, .card.tv-focused {
+    transform: scale(1.15);
+}
+
 /* ── Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar {
     width: 6px;
@@ -149,6 +183,31 @@ body {
 #searchInput.open {
     width: 220px;
     opacity: 1;
+}
+
+.remote-code-display {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: monospace;
+    letter-spacing: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 10px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.remote-code-display span {
+    color: var(--white);
+    font-weight: 700;
+}
+.remote-code-display.connected {
+    color: var(--green);
+    background: rgba(70, 211, 105, 0.15);
+}
+.remote-code-display.connected span {
+    color: var(--green);
 }
 
 #searchInput::placeholder {

@@ -187,6 +187,7 @@ function createCard(item, inGrid = false) {
 
   const wrapper = document.createElement(inGrid ? 'div' : 'div');
   wrapper.className = inGrid ? 'card' : 'card';
+  wrapper.tabIndex = 0;
 
   wrapper.innerHTML = `
     <div class="card-img-wrap">
@@ -826,4 +827,170 @@ async function runAiPicks() {
     aiSubmitLabel.innerHTML = '<i class="ph-fill ph-sparkle"></i> Generate Picks';
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+// VIRTUAL PAD (PEERJS) — Remote Control Integration
+// ══════════════════════════════════════════════════════════════
+
+const remoteCodeSpan = $('remoteCodeSpan') || { textContent: '' };
+const remoteCodeDisplay = $('remoteCodeDisplay') || { classList: { add:()=>{} } };
+let padPeer = null;
+
+function initVirtualPad() {
+  if (typeof Peer === 'undefined') return;
+  const code = Math.floor(1000 + Math.random() * 9000).toString();
+  remoteCodeSpan.textContent = code;
+  
+  padPeer = new Peer(`joyflix-tv-${code}`);
+  
+  padPeer.on('open', (id) => {
+    console.log('TV Peer ready:', id);
+  });
+  
+  padPeer.on('connection', (conn) => {
+    console.log('Virtual Pad connected!');
+    remoteCodeDisplay.classList.add('connected');
+    remoteCodeSpan.textContent = 'Conn';
+    
+    // Explicitly let the client know we are ready
+    conn.on('open', () => {
+      conn.send({ type: 'status', status: 'ready' });
+    });
+
+    conn.on('data', (data) => {
+      if (!data) return;
+      if (data.type === 'key') {
+        handleRemoteKey(data.key);
+      } else if (data.type === 'text') {
+        handleRemoteText(data.text);
+      }
+    });
+
+    conn.on('close', () => {
+      remoteCodeDisplay.classList.remove('connected');
+      initVirtualPad(); // generate new code
+    });
+  });
+
+  padPeer.on('error', (err) => {
+    console.error('Peer error:', err);
+  });
+}
+
+function handleRemoteText(text) {
+  // Always open search UI and insert text
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    if (!searchInput.classList.contains('open')) {
+      searchInput.classList.add('open');
+    }
+    
+    // Clear any existing focus classes
+    const focusable = Array.from(document.querySelectorAll('.tv-focused'));
+    focusable.forEach(el => el.classList.remove('tv-focused'));
+    
+    searchInput.value = text;
+    searchInput.focus();
+    searchInput.classList.add('tv-focused');
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+
+function handleRemoteKey(key) {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+    moveFocus(key);
+  } else if (key === 'Enter') {
+    const active = document.activeElement;
+    if (active && typeof active.click === 'function') {
+      active.click();
+    }
+  } else if (key === 'Escape' || key === 'Backspace' || key === 'Home') {
+    if (key === 'Home') {
+      if (typeof switchView === 'function') switchView('home');
+    }
+    // Find close buttons or back buttons and click them
+    if ($('player-overlay') && $('player-overlay').classList.contains('open')) {
+      $('playerBack').click();
+    } else if ($('modal-overlay') && $('modal-overlay').classList.contains('open')) {
+      $('modalClose').click();
+    } else if ($('ai-overlay') && $('ai-overlay').classList.contains('open')) {
+      $('aiClose').click();
+    } else if ($('search-results-page') && $('search-results-page').classList.contains('active')) {
+      $('searchToggle').click(); // closes search
+    }
+  }
+}
+
+function moveFocus(direction) {
+  const active = document.activeElement;
+  
+  // Determine the active scope for focusable elements
+  let scope = document.body;
+  if (document.getElementById('player-overlay').classList.contains('open')) {
+    scope = document.getElementById('player-overlay');
+  } else if (document.getElementById('ai-overlay').classList.contains('open')) {
+    scope = document.getElementById('ai-overlay');
+  } else if (document.getElementById('modal-overlay').classList.contains('open')) {
+    scope = document.getElementById('modal-overlay');
+  }
+  
+  const focusable = Array.from(scope.querySelectorAll('a, button, input, [tabindex="0"]')).filter(el => {
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0 && el.style.display !== 'none' && el.style.visibility !== 'hidden';
+  });
+  
+  if (!active || active === document.body || !focusable.includes(active)) {
+    if (focusable.length) {
+      // Clear old focus
+      Array.from(document.querySelectorAll('.tv-focused')).forEach(el => el.classList.remove('tv-focused'));
+      focusable[0].focus();
+      focusable[0].classList.add('tv-focused');
+    }
+    return;
+  }
+  
+  const rect1 = active.getBoundingClientRect();
+  let bestMatch = null;
+  let minDistance = Infinity;
+  
+  focusable.forEach(el => {
+    if (el === active) return;
+    const rect2 = el.getBoundingClientRect();
+    let dx = 0, dy = 0;
+    let valid = false;
+    
+    // Simple spatial navigation distance logic
+    if (direction === 'ArrowRight' && Math.round(rect2.left) >= Math.round(rect1.right) - 10) { dx = rect2.left - rect1.right; dy = rect2.top - rect1.top; valid = true; }
+    if (direction === 'ArrowLeft' && Math.round(rect2.right) <= Math.round(rect1.left) + 10) { dx = rect1.left - rect2.right; dy = rect2.top - rect1.top; valid = true; }
+    if (direction === 'ArrowDown' && Math.round(rect2.top) >= Math.round(rect1.bottom) - 10) { dy = rect2.top - rect1.bottom; dx = rect2.left - rect1.left; valid = true; }
+    if (direction === 'ArrowUp' && Math.round(rect2.bottom) <= Math.round(rect1.top) + 10) { dy = rect1.top - rect2.bottom; dx = rect2.left - rect1.left; valid = true; }
+    
+    if (valid) {
+      const distance = (dx * dx) + (dy * dy * 4); // weight vertical slightly more
+      if (distance < minDistance) {
+        minDistance = distance;
+        bestMatch = el;
+      }
+    }
+  });
+  
+  if (bestMatch) {
+    Array.from(document.querySelectorAll('.tv-focused')).forEach(el => el.classList.remove('tv-focused'));
+    bestMatch.focus();
+    bestMatch.classList.add('tv-focused');
+    bestMatch.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  }
+}
+
+// Ensure first item is focused when the TV connection is made
+document.addEventListener('keydown', (e) => {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    const active = document.activeElement;
+    if (active && !active.classList.contains('tv-focused')) {
+      active.classList.add('tv-focused');
+    }
+  }
+});
+
+setTimeout(initVirtualPad, 1000);
 

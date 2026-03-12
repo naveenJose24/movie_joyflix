@@ -1,0 +1,12 @@
+{
+  "appId": "com.joyflix.remote",
+  "appName": "JoyFlix Remote",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

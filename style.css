@@ -446,6 +446,10 @@ body {
     object-fit: cover;
     display: block;
     transition: transform .5s ease;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+    pointer-events: none;
 }
 
 .card:hover .card-img-wrap img {

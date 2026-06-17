@@ -399,7 +399,6 @@ body {
     gap: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
     scrollbar-width: none;
     padding-bottom: 10px;
 }
@@ -853,7 +852,6 @@ body {
     gap: .5rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
     scrollbar-width: none;
     padding: .6rem 4%;
     margin-top: 68px;

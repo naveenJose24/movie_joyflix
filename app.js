@@ -1,6 +1,6 @@
 /* ============================================================
    JOYFLIX — app.js
-   TMDB API + tmdbplayer.nunesnetwork.com integration
+   TMDB API + vidlink.pro integration
    ============================================================ */
 
 'use strict';
@@ -9,7 +9,54 @@
 const TMDB_KEY = '2dca580c2a14b55200e784d157207b4d'; // public demo key
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
-const PLAYER_URL = 'https://tmdbplayer.nunesnetwork.com/';
+const PROVIDER_STORE = 'joyflix_provider';
+
+// Ported from github.com/ikku47/stream-it-app (src/lib/providers.ts)
+const PROVIDERS = [
+  {
+    id: 'vidlink',
+    name: 'VidLink',
+    movie: id => `https://vidlink.pro/movie/${id}?primaryColor=E50914&autoplay=true`,
+    tv: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=E50914&autoplay=true`,
+  },
+  {
+    id: 'vidsrc',
+    name: 'VidSrc',
+    movie: id => `https://vidsrc.me/embed/movie?tmdb=${id}`,
+    tv: (id, s, e) => `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&ep=${e}`,
+  },
+  {
+    id: 'videasy',
+    name: 'Videasy',
+    movie: id => `https://player.videasy.net/movie/${id}`,
+    tv: (id, s, e) => `https://player.videasy.net/tv/${id}/${s}/${e}`,
+  },
+  {
+    id: 'vidking',
+    name: 'VidKing',
+    movie: id => `https://www.vidking.net/embed/movie/${id}`,
+    tv: (id, s, e) => `https://www.vidking.net/embed/tv/${id}/${s}/${e}`,
+  },
+  {
+    id: '2embed',
+    name: '2Embed',
+    movie: id => `https://www.2embed.cc/embed/${id}`,
+    tv: (id, s, e) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`,
+  },
+  {
+    id: 'moviesclub',
+    name: 'MoviesClub',
+    movie: id => `https://moviesapi.club/movie/${id}`,
+    tv: (id, s, e) => `https://moviesapi.club/tv/${id}-${s}-${e}`,
+  },
+  {
+    id: 'nunes',
+    name: 'Nunes Network',
+    movie: id => `https://tmdbplayer.nunesnetwork.com/?type=movie&id=${id}&server=1`,
+    tv: (id, s, e) => `https://tmdbplayer.nunesnetwork.com/?type=tv&id=${id}&server=1&s=${s}&e=${e}`,
+  },
+];
+const DEFAULT_PROVIDER = 'vidlink';
 
 // ── STATE ────────────────────────────────────────────────────
 let currentTab = 'home';   // home | movies | tv | trending
@@ -369,22 +416,34 @@ async function openTrailer(id, type) {
 }
 
 // ── PLAYER ───────────────────────────────────────────────────
-function playItem(item) {
-  const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
-  const type = isTV ? 'tv' : 'movie';
+let currentPlayItem = null;
+let currentProviderId = localStorage.getItem(PROVIDER_STORE) || DEFAULT_PROVIDER;
+
+function getProvider() {
+  return PROVIDERS.find(p => p.id === currentProviderId) || PROVIDERS[0];
+}
+
+function renderPlayer() {
+  if (!currentPlayItem) return;
+  const { item, isTV } = currentPlayItem;
   const title = item.title || item.name || '';
+  const provider = getProvider();
 
-  const params = new URLSearchParams({ type, id: item.id, server: 1 });
-  if (isTV) {
-    params.set('s', selectedSeason);
-    params.set('e', selectedEpisode);
-  }
+  const url = isTV
+    ? provider.tv(item.id, selectedSeason, selectedEpisode)
+    : provider.movie(item.id);
 
-  const url = `${PLAYER_URL}?${params.toString()}`;
   playerIframe.src = url;
   playerTitle.textContent = isTV
     ? `${title} — S${selectedSeason} E${selectedEpisode}`
     : title;
+}
+
+function playItem(item) {
+  const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
+  currentPlayItem = { item, isTV };
+
+  renderPlayer();
 
   playerOverlay.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -396,11 +455,26 @@ function playItem(item) {
 function closePlayer() {
   playerOverlay.classList.remove('open');
   document.body.style.overflow = '';
+  currentPlayItem = null;
   // Small delay to avoid audio continuing
   setTimeout(() => { playerIframe.src = ''; }, 400);
 }
 
 playerBack.onclick = closePlayer;
+
+const playerProviderSelect = $('playerProviderSelect');
+if (playerProviderSelect) {
+  playerProviderSelect.innerHTML = PROVIDERS.map(p =>
+    `<option value="${p.id}">${p.name}</option>`
+  ).join('');
+  playerProviderSelect.value = currentProviderId;
+
+  playerProviderSelect.addEventListener('change', () => {
+    currentProviderId = playerProviderSelect.value;
+    localStorage.setItem(PROVIDER_STORE, currentProviderId);
+    renderPlayer();
+  });
+}
 
 // ── SEARCH ───────────────────────────────────────────────────
 searchToggle.addEventListener('click', () => {

@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">JoyFlix Remote</string>
-    <string name="title_activity_main">JoyFlix Remote</string>
-    <string name="package_name">com.joyflix.remote</string>
-    <string name="custom_url_scheme">com.joyflix.remote</string>
-</resources>

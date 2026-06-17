@@ -2,25 +2,17 @@
   "name": "movie",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+  "description": "JoyFlix — static web app (TMDB + nunesnetwork player)",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/naveenld024/movie.git"
   },
-  "dependencies": {
-    "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/naveenld024/movie/issues"
   },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+  "homepage": "https://github.com/naveenld024/movie#readme"
 }

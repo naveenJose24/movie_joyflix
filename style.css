@@ -383,6 +383,15 @@ body {
     opacity: 0;
     transform: translateX(-6px);
     transition: opacity var(--trans), transform var(--trans);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+}
+
+.row-see-all:hover {
+    text-decoration: underline;
 }
 
 .row-section:hover .row-see-all {
@@ -845,6 +854,65 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 10px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GRID PAGE (See All)
+══════════════════════════════════════════════════════════ */
+#grid-page {
+    display: none;
+    padding: 80px 4% 4rem;
+}
+
+#grid-page.active {
+    display: block;
+}
+
+.grid-page-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.grid-back-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem .9rem;
+    border-radius: 6px;
+    transition: color var(--trans), border-color var(--trans);
+    flex-shrink: 0;
+}
+
+.grid-back-btn:hover {
+    color: var(--white);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.grid-page-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -.2px;
+}
+
+#gridSentinel {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#gridSentinel .spinner {
+    margin: 0;
 }
 
 /* ══════════════════════════════════════════════════════════

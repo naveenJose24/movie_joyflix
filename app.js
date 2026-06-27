@@ -70,6 +70,14 @@ let selectedEpisode = 1;
 let totalSeasons = 1;
 let totalEpisodes = 1;
 
+// Grid page state
+let gridEndpoint = null;
+let gridGenreId = null;
+let gridExtraParams = {};
+let gridCurrentPage = 1;
+let gridTotalPages = 1;
+let gridLoading = false;
+
 // ── DOM REFS ────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const navbar = $('navbar');
@@ -110,6 +118,11 @@ const navTV = $('navTV');
 const navTrending = $('navTrending');
 const homeBtn = $('homeBtn');
 const hero = $('hero');
+const gridPage = $('grid-page');
+const gridContent = $('gridContent');
+const gridTitle = $('gridTitle');
+const gridBack = $('gridBack');
+const gridSentinel = $('gridSentinel');
 
 // ── UTILS ────────────────────────────────────────────────────
 const img = (path, size = 'w500') =>
@@ -182,15 +195,20 @@ function setHero(item) {
 }
 
 // ── ROWS ─────────────────────────────────────────────────────
-function createRow(title, items) {
+function createRow(title, items, endpoint, params = {}) {
   if (!items || !items.length) return;
   const section = document.createElement('section');
   section.className = 'row-section';
 
+  if (endpoint) {
+    section.dataset.endpoint = endpoint;
+    if (Object.keys(params).length) section.dataset.params = JSON.stringify(params);
+  }
+
   section.innerHTML = `
     <div class="row-header">
       <h2 class="row-title">${title}</h2>
-      <a href="#" class="row-see-all">See all ›</a>
+      ${endpoint ? `<button class="row-see-all">See all ›</button>` : ''}
     </div>
     <div class="slider-track-outer">
       <div class="slider-track"></div>
@@ -206,7 +224,7 @@ function createRow(title, items) {
   mainContent.appendChild(section);
 }
 
-function createSkeletonRow(title, count = 8) {
+function createSkeletonRow(title, count = 16) {
   const section = document.createElement('section');
   section.className = 'row-section';
   section.innerHTML = `
@@ -520,14 +538,17 @@ function showSearchPage(q) {
   hero.style.display = 'none';
   mainContent.style.display = 'none';
   genreBar.style.display = 'none';
+  gridPage.classList.remove('active');
   searchPage.classList.add('active');
 }
 
 function hideSearchPage() {
   searchPage.classList.remove('active');
-  hero.style.display = '';
-  mainContent.style.display = '';
-  genreBar.style.display = '';
+  if (!gridPage.classList.contains('active')) {
+    hero.style.display = '';
+    mainContent.style.display = '';
+    genreBar.style.display = '';
+  }
 }
 
 // ── GENRE CACHE ──────────────────────────────────────────────
@@ -546,30 +567,54 @@ async function getGenreMap() {
 }
 
 // ── GENRE FILTER BAR ─────────────────────────────────────────
-const HOME_GENRES = [
-  { id: null, name: 'All' },
-  { id: 28, name: 'Action' },
-  { id: 35, name: 'Comedy' },
-  { id: 18, name: 'Drama' },
-  { id: 27, name: 'Horror' },
+const ALL_GENRES = [
+  { id: null,  name: 'All' },
+  { id: 28,    name: 'Action' },
+  { id: 12,    name: 'Adventure' },
+  { id: 16,    name: 'Animation' },
+  { id: 35,    name: 'Comedy' },
+  { id: 80,    name: 'Crime' },
+  { id: 99,    name: 'Documentary' },
+  { id: 18,    name: 'Drama' },
+  { id: 10751, name: 'Family' },
+  { id: 14,    name: 'Fantasy' },
+  { id: 36,    name: 'History' },
+  { id: 27,    name: 'Horror' },
+  { id: 10402, name: 'Music' },
+  { id: 9648,  name: 'Mystery' },
   { id: 10749, name: 'Romance' },
-  { id: 878, name: 'Sci-Fi' },
-  { id: 16, name: 'Animation' },
-  { id: 53, name: 'Thriller' },
-  { id: 12, name: 'Adventure' },
+  { id: 878,   name: 'Sci-Fi' },
+  { id: 53,    name: 'Thriller' },
+  { id: 10752, name: 'War' },
+  { id: 37,    name: 'Western' },
+  { id: 10759, name: 'Action & Adventure' },
+  { id: 10762, name: 'Kids' },
+  { id: 10765, name: 'Sci-Fi & Fantasy' },
+  { id: 10764, name: 'Reality' },
+  { id: 10768, name: 'War & Politics' },
 ];
 
-function buildGenreBar(genres) {
+function discoverEndpoint() {
+  return currentTab === 'tv' ? '/discover/tv' : '/discover/movie';
+}
+
+function buildGenreBar() {
   genreBar.innerHTML = '';
-  genres.forEach(g => {
+  ALL_GENRES.forEach(g => {
     const pill = document.createElement('button');
     pill.className = `genre-pill${g.id === currentGenreId ? ' active' : ''}`;
     pill.textContent = g.name;
+    pill.dataset.genreId = g.id ?? '';
     pill.onclick = () => {
       currentGenreId = g.id;
       document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
-      loadRows(currentTab, g.id);
+      if (g.id === null) {
+        hideGridPage();
+        loadRows(currentTab, null);
+      } else {
+        openGridPage(g.name, discoverEndpoint(), g.id);
+      }
     };
     genreBar.appendChild(pill);
   });
@@ -591,44 +636,97 @@ function switchView(tab) {
   currentTab = tab;
   setActiveNavLink($({ home: 'navHome', movies: 'navMovies', tv: 'navTV', trending: 'navTrending' }[tab]));
   hideSearchPage();
+  hideGridPage();
   searchInput.value = '';
   searchInput.classList.remove('open');
   searchOpen = false;
   loadRows(tab, null);
-  buildGenreBar(HOME_GENRES);
-  document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+  currentGenreId = null;
+  buildGenreBar();
   genreBar.querySelector('.genre-pill').classList.add('active');
 }
 
 // ── ROW DEFINITIONS ──────────────────────────────────────────
+const D_MOVIE = '/discover/movie';
+const D_TV    = '/discover/tv';
+
 const ROW_CONFIG = {
   home: [
-    { title: '🔥 Trending This Week', endpoint: '/trending/all/week' },
-    { title: '🎬 Popular Movies', endpoint: '/movie/popular' },
-    { title: '📺 Popular TV Shows', endpoint: '/tv/popular' },
-    { title: '⭐ Top Rated Movies', endpoint: '/movie/top_rated' },
-    { title: '🆕 Now Playing', endpoint: '/movie/now_playing' },
-    { title: '📡 Airing Today', endpoint: '/tv/airing_today' },
-    { title: '🏆 Top Rated TV', endpoint: '/tv/top_rated' },
-    { title: '🗓 Upcoming Movies', endpoint: '/movie/upcoming' },
+    { title: 'Trending This Week',     endpoint: '/trending/all/week' },
+    { title: 'Popular Movies',         endpoint: '/movie/popular' },
+    { title: 'Popular TV Shows',       endpoint: '/tv/popular' },
+    { title: 'Top Rated Movies',       endpoint: '/movie/top_rated' },
+    { title: 'Now Playing',            endpoint: '/movie/now_playing' },
+    { title: 'Upcoming Movies',        endpoint: '/movie/upcoming' },
+    { title: 'Airing Today',           endpoint: '/tv/airing_today' },
+    { title: 'Top Rated TV',           endpoint: '/tv/top_rated' },
+    { title: 'Action Movies',          endpoint: D_MOVIE, params: { with_genres: 28 } },
+    { title: 'Comedy Movies',          endpoint: D_MOVIE, params: { with_genres: 35 } },
+    { title: 'Horror Movies',          endpoint: D_MOVIE, params: { with_genres: 27 } },
+    { title: 'Drama Movies',           endpoint: D_MOVIE, params: { with_genres: 18 } },
+    { title: 'Sci-Fi Movies',          endpoint: D_MOVIE, params: { with_genres: 878 } },
+    { title: 'Fantasy Movies',         endpoint: D_MOVIE, params: { with_genres: 14 } },
+    { title: 'Crime & Thriller',       endpoint: D_MOVIE, params: { with_genres: '80,53' } },
+    { title: 'Romance Movies',         endpoint: D_MOVIE, params: { with_genres: 10749 } },
+    { title: 'Animated Films',         endpoint: D_MOVIE, params: { with_genres: 16 } },
+    { title: 'Family Movies',          endpoint: D_MOVIE, params: { with_genres: 10751 } },
+    { title: 'Action & Adventure TV',  endpoint: D_TV,    params: { with_genres: 10759 } },
+    { title: 'Sci-Fi & Fantasy TV',    endpoint: D_TV,    params: { with_genres: 10765 } },
+    { title: 'Drama Series',           endpoint: D_TV,    params: { with_genres: 18 } },
+    { title: 'Mystery & Crime TV',     endpoint: D_TV,    params: { with_genres: '9648,80' } },
+    { title: 'Animated Shows',         endpoint: D_TV,    params: { with_genres: 16 } },
+    { title: 'Reality TV',             endpoint: D_TV,    params: { with_genres: 10764 } },
+    { title: 'Highest Rated Movies',   endpoint: D_MOVIE, params: { sort_by: 'vote_average.desc', 'vote_count.gte': 5000 } },
   ],
   movies: [
-    { title: '🎬 Popular Movies', endpoint: '/movie/popular' },
-    { title: '⭐ Top Rated', endpoint: '/movie/top_rated' },
-    { title: '🆕 Now Playing', endpoint: '/movie/now_playing' },
-    { title: '🗓 Upcoming', endpoint: '/movie/upcoming' },
+    { title: 'Popular Movies',   endpoint: '/movie/popular' },
+    { title: 'Top Rated',        endpoint: '/movie/top_rated' },
+    { title: 'Now Playing',      endpoint: '/movie/now_playing' },
+    { title: 'Upcoming',         endpoint: '/movie/upcoming' },
+    { title: 'Action',           endpoint: D_MOVIE, params: { with_genres: 28 } },
+    { title: 'Comedy',           endpoint: D_MOVIE, params: { with_genres: 35 } },
+    { title: 'Drama',            endpoint: D_MOVIE, params: { with_genres: 18 } },
+    { title: 'Horror',           endpoint: D_MOVIE, params: { with_genres: 27 } },
+    { title: 'Science Fiction',  endpoint: D_MOVIE, params: { with_genres: 878 } },
+    { title: 'Fantasy',          endpoint: D_MOVIE, params: { with_genres: 14 } },
+    { title: 'Crime',            endpoint: D_MOVIE, params: { with_genres: 80 } },
+    { title: 'Thriller',         endpoint: D_MOVIE, params: { with_genres: 53 } },
+    { title: 'Romance',          endpoint: D_MOVIE, params: { with_genres: 10749 } },
+    { title: 'Animation',        endpoint: D_MOVIE, params: { with_genres: 16 } },
+    { title: 'Family',           endpoint: D_MOVIE, params: { with_genres: 10751 } },
+    { title: 'War & History',    endpoint: D_MOVIE, params: { with_genres: '10752,36' } },
+    { title: 'Western',          endpoint: D_MOVIE, params: { with_genres: 37 } },
+    { title: 'Documentary',      endpoint: D_MOVIE, params: { with_genres: 99 } },
+    { title: 'Highest Rated',    endpoint: D_MOVIE, params: { sort_by: 'vote_average.desc', 'vote_count.gte': 5000 } },
   ],
   tv: [
-    { title: '📺 Popular Shows', endpoint: '/tv/popular' },
-    { title: '⭐ Top Rated', endpoint: '/tv/top_rated' },
-    { title: '📡 Airing Today', endpoint: '/tv/airing_today' },
-    { title: '📻 On The Air', endpoint: '/tv/on_the_air' },
+    { title: 'Popular Shows',        endpoint: '/tv/popular' },
+    { title: 'Top Rated',            endpoint: '/tv/top_rated' },
+    { title: 'Airing Today',         endpoint: '/tv/airing_today' },
+    { title: 'On The Air',           endpoint: '/tv/on_the_air' },
+    { title: 'Action & Adventure',   endpoint: D_TV, params: { with_genres: 10759 } },
+    { title: 'Comedy Shows',         endpoint: D_TV, params: { with_genres: 35 } },
+    { title: 'Drama Series',         endpoint: D_TV, params: { with_genres: 18 } },
+    { title: 'Sci-Fi & Fantasy',     endpoint: D_TV, params: { with_genres: 10765 } },
+    { title: 'Crime Shows',          endpoint: D_TV, params: { with_genres: 80 } },
+    { title: 'Mystery',              endpoint: D_TV, params: { with_genres: 9648 } },
+    { title: 'Animated Shows',       endpoint: D_TV, params: { with_genres: 16 } },
+    { title: 'Family Shows',         endpoint: D_TV, params: { with_genres: 10751 } },
+    { title: 'Reality TV',           endpoint: D_TV, params: { with_genres: 10764 } },
+    { title: 'Kids',                 endpoint: D_TV, params: { with_genres: 10762 } },
+    { title: 'War & Politics',       endpoint: D_TV, params: { with_genres: 10768 } },
+    { title: 'Documentary',          endpoint: D_TV, params: { with_genres: 99 } },
   ],
   trending: [
-    { title: '📈 Trending Today', endpoint: '/trending/all/day' },
-    { title: '📅 Trending This Week', endpoint: '/trending/all/week' },
-    { title: '🎥 Trending Movies', endpoint: '/trending/movie/week' },
-    { title: '📺 Trending TV', endpoint: '/trending/tv/week' },
+    { title: 'Trending Today',      endpoint: '/trending/all/day' },
+    { title: 'Trending This Week',  endpoint: '/trending/all/week' },
+    { title: 'Trending Movies',     endpoint: '/trending/movie/week' },
+    { title: 'Trending TV',         endpoint: '/trending/tv/week' },
+    { title: 'Trending Action',     endpoint: D_MOVIE, params: { with_genres: 28, sort_by: 'popularity.desc' } },
+    { title: 'Trending Comedy',     endpoint: D_MOVIE, params: { with_genres: 35, sort_by: 'popularity.desc' } },
+    { title: 'Trending Drama',      endpoint: D_TV,    params: { with_genres: 18, sort_by: 'popularity.desc' } },
+    { title: 'Trending Horror',     endpoint: D_MOVIE, params: { with_genres: 27, sort_by: 'popularity.desc' } },
+    { title: 'Trending Sci-Fi',     endpoint: D_MOVIE, params: { with_genres: 878, sort_by: 'popularity.desc' } },
   ],
 };
 
@@ -641,26 +739,22 @@ async function loadRows(tab, genreId) {
   // Skeleton placeholders
   rows.forEach(r => {
     const s = createSkeletonRow(r.title);
-    s.dataset.endpoint = r.endpoint;
     mainContent.appendChild(s);
   });
 
-  // Fetch first row for hero
-  const firstEndpoint = rows[0].endpoint;
-  const firstParams = genreId ? { with_genres: genreId } : {};
-  let heroSet = false;
-
-  // Fetch all rows in parallel
+  // Fetch all rows in parallel (2 pages each = ~40 items per row)
   const fetches = rows.map(async (r) => {
-    const params = genreId ? { with_genres: genreId, page: 1 } : { page: 1 };
+    const base = { ...(r.params || {}) };
     try {
-      const data = await tmdb(r.endpoint, params);
-      let items = (data.results || []).filter(i => i.poster_path);
-      // Ensure media_type tag for mixed endpoints
+      const [d1, d2] = await Promise.all([
+        tmdb(r.endpoint, { ...base, page: 1 }),
+        tmdb(r.endpoint, { ...base, page: 2 }),
+      ]);
+      let items = [...(d1.results || []), ...(d2.results || [])].filter(i => i.poster_path);
       items = items.map(i => ({ ...i, media_type: i.media_type || (i.first_air_date ? 'tv' : 'movie') }));
-      return { title: r.title, items };
+      return { title: r.title, items, endpoint: r.endpoint, params: r.params || {} };
     } catch {
-      return { title: r.title, items: [] };
+      return { title: r.title, items: [], endpoint: r.endpoint, params: r.params || {} };
     }
   });
 
@@ -668,7 +762,6 @@ async function loadRows(tab, genreId) {
 
   // Set hero from first row
   if (results[0] && results[0].items.length) {
-    // Pick a random from top 5
     const pick = results[0].items[Math.floor(Math.random() * Math.min(5, results[0].items.length))];
     setHero(pick);
   }
@@ -676,13 +769,115 @@ async function loadRows(tab, genreId) {
   // Replace skeletons with real rows
   mainContent.innerHTML = '';
   results.forEach(r => {
-    if (r.items.length) createRow(r.title, r.items);
+    if (r.items.length) createRow(r.title, r.items, r.endpoint, r.params);
   });
 }
 
+// ── GRID PAGE (See All + Infinite Scroll) ────────────────────
+function showGridPage() {
+  hero.style.display = 'none';
+  mainContent.style.display = 'none';
+  genreBar.style.display = 'none';
+  searchPage.classList.remove('active');
+  gridPage.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function hideGridPage() {
+  gridPage.classList.remove('active');
+  hero.style.display = '';
+  mainContent.style.display = '';
+  genreBar.style.display = '';
+  window.removeEventListener('scroll', onGridScroll);
+}
+
+function onGridScroll() {
+  if (gridLoading || gridCurrentPage > gridTotalPages) return;
+  const distFromBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+  if (distFromBottom < 500) loadNextGridPage();
+}
+
+async function loadNextGridPage() {
+  if (gridLoading || gridCurrentPage > gridTotalPages) return;
+  gridLoading = true;
+  gridSentinel.innerHTML = '<div class="spinner"></div>';
+
+  const params = { ...gridExtraParams, page: gridCurrentPage };
+  if (gridGenreId) params.with_genres = gridGenreId;
+
+  try {
+    const data = await tmdb(gridEndpoint, params);
+    gridTotalPages = Math.min(data.total_pages || 1, 500);
+    let items = (data.results || []).filter(i => i.poster_path);
+    items = items.map(i => ({ ...i, media_type: i.media_type || (i.first_air_date ? 'tv' : 'movie') }));
+    items.forEach(item => gridContent.appendChild(createCard(item, true)));
+    gridCurrentPage++;
+  } catch {
+    gridSentinel.innerHTML = '<p style="color:var(--text-mute);padding:1rem">Failed to load more.</p>';
+  } finally {
+    gridLoading = false;
+    gridSentinel.innerHTML = gridCurrentPage > gridTotalPages ? '' : '';
+  }
+}
+
+async function openGridPage(title, endpoint, genreId, extraParams = {}) {
+  gridEndpoint = endpoint;
+  gridGenreId = genreId || null;
+  gridExtraParams = extraParams;
+  gridCurrentPage = 1;
+  gridTotalPages = 500;
+  gridLoading = false;
+  gridTitle.textContent = title;
+  gridContent.innerHTML = '<div class="spinner"></div>';
+  gridSentinel.innerHTML = '';
+  showGridPage();
+  window.removeEventListener('scroll', onGridScroll);
+
+  // Load pages 1 + 2 immediately for ~40 items on first view
+  gridLoading = true;
+  const base = { ...gridExtraParams, ...(gridGenreId ? { with_genres: gridGenreId } : {}) };
+  try {
+    const [d1, d2] = await Promise.all([
+      tmdb(gridEndpoint, { ...base, page: 1 }),
+      tmdb(gridEndpoint, { ...base, page: 2 }),
+    ]);
+    gridTotalPages = Math.min(d1.total_pages || 1, 500);
+    gridContent.innerHTML = '';
+    [...(d1.results || []), ...(d2.results || [])]
+      .filter(i => i.poster_path)
+      .map(i => ({ ...i, media_type: i.media_type || (i.first_air_date ? 'tv' : 'movie') }))
+      .forEach(item => gridContent.appendChild(createCard(item, true)));
+    gridCurrentPage = 3;
+  } catch {
+    gridContent.innerHTML = '<p style="color:var(--text-mute);grid-column:1/-1">Failed to load.</p>';
+  } finally {
+    gridLoading = false;
+  }
+
+  window.addEventListener('scroll', onGridScroll, { passive: true });
+}
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.row-see-all');
+  if (!btn) return;
+  const section = btn.closest('[data-endpoint]');
+  if (!section) return;
+  const rowTitle = section.querySelector('.row-title')?.textContent || '';
+  const extraParams = section.dataset.params ? JSON.parse(section.dataset.params) : {};
+  openGridPage(rowTitle, section.dataset.endpoint, null, extraParams);
+});
+
+gridBack.addEventListener('click', () => {
+  currentGenreId = null;
+  hideGridPage();
+  buildGenreBar();
+  genreBar.querySelector('.genre-pill').classList.add('active');
+});
+
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
-  buildGenreBar(HOME_GENRES);
+  buildGenreBar();
+  genreBar.querySelector('.genre-pill').classList.add('active');
   await loadRows('home', null);
 }
 
@@ -742,9 +937,10 @@ document.addEventListener('touchmove', e => {
 // ══════════════════════════════════════════════════════════════
 
 document.addEventListener('wheel', e => {
+  if (e.target.closest('.card')) return; // let cards pass through to vertical page scroll
   const track = e.target.closest('.slider-track, #genre-bar');
   if (!track) return;
-  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // trackpad already scrolling horizontally
+  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
   if (track.scrollWidth <= track.clientWidth) return;
   e.preventDefault();
   track.scrollLeft += e.deltaY;

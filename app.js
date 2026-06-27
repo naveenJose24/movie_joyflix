@@ -224,6 +224,47 @@ function createRow(title, items, endpoint, params = {}) {
   mainContent.appendChild(section);
 }
 
+function createTop10Row(title, items, endpoint, params = {}) {
+  const top10 = items.slice(0, 10);
+  if (!top10.length) return;
+
+  const section = document.createElement('section');
+  section.className = 'row-section';
+  if (endpoint) {
+    section.dataset.endpoint = endpoint;
+    if (Object.keys(params).length) section.dataset.params = JSON.stringify(params);
+  }
+
+  section.innerHTML = `
+    <div class="row-header">
+      <h2 class="row-title">${title}</h2>
+      ${endpoint ? `<button class="row-see-all">See all ›</button>` : ''}
+    </div>
+    <div class="slider-track-outer">
+      <div class="slider-track"></div>
+    </div>
+  `;
+
+  const track = section.querySelector('.slider-track');
+  top10.forEach((item, i) => {
+    const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
+    const typed = { ...item, media_type: isTV ? 'tv' : 'movie' };
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'top10-item';
+
+    const rank = document.createElement('span');
+    rank.className = 'top10-rank';
+    rank.textContent = i + 1;
+
+    wrapper.appendChild(rank);
+    wrapper.appendChild(createCard(typed));
+    track.appendChild(wrapper);
+  });
+
+  mainContent.appendChild(section);
+}
+
 function createSkeletonRow(title, count = 16) {
   const section = document.createElement('section');
   section.className = 'row-section';
@@ -652,7 +693,7 @@ const D_TV    = '/discover/tv';
 
 const ROW_CONFIG = {
   home: [
-    { title: 'Trending This Week',     endpoint: '/trending/all/week' },
+    { title: 'Top 10 This Week',       endpoint: '/trending/all/week',   top10: true },
     { title: 'Popular Movies',         endpoint: '/movie/popular' },
     { title: 'Popular TV Shows',       endpoint: '/tv/popular' },
     { title: 'Top Rated Movies',       endpoint: '/movie/top_rated' },
@@ -718,10 +759,13 @@ const ROW_CONFIG = {
     { title: 'Documentary',          endpoint: D_TV, params: { with_genres: 99 } },
   ],
   trending: [
-    { title: 'Trending Today',      endpoint: '/trending/all/day' },
-    { title: 'Trending This Week',  endpoint: '/trending/all/week' },
-    { title: 'Trending Movies',     endpoint: '/trending/movie/week' },
-    { title: 'Trending TV',         endpoint: '/trending/tv/week' },
+    { title: 'Top 10 Today',           endpoint: '/trending/all/day',      top10: true },
+    { title: 'Top 10 Movies',          endpoint: '/trending/movie/week',   top10: true },
+    { title: 'Top 10 TV Shows',        endpoint: '/trending/tv/week',      top10: true },
+    { title: 'Trending Today',         endpoint: '/trending/all/day' },
+    { title: 'Trending This Week',     endpoint: '/trending/all/week' },
+    { title: 'Trending Movies',        endpoint: '/trending/movie/week' },
+    { title: 'Trending TV',            endpoint: '/trending/tv/week' },
     { title: 'Trending Action',     endpoint: D_MOVIE, params: { with_genres: 28, sort_by: 'popularity.desc' } },
     { title: 'Trending Comedy',     endpoint: D_MOVIE, params: { with_genres: 35, sort_by: 'popularity.desc' } },
     { title: 'Trending Drama',      endpoint: D_TV,    params: { with_genres: 18, sort_by: 'popularity.desc' } },
@@ -752,9 +796,9 @@ async function loadRows(tab, genreId) {
       ]);
       let items = [...(d1.results || []), ...(d2.results || [])].filter(i => i.poster_path);
       items = items.map(i => ({ ...i, media_type: i.media_type || (i.first_air_date ? 'tv' : 'movie') }));
-      return { title: r.title, items, endpoint: r.endpoint, params: r.params || {} };
+      return { title: r.title, items, endpoint: r.endpoint, params: r.params || {}, top10: !!r.top10 };
     } catch {
-      return { title: r.title, items: [], endpoint: r.endpoint, params: r.params || {} };
+      return { title: r.title, items: [], endpoint: r.endpoint, params: r.params || {}, top10: !!r.top10 };
     }
   });
 
@@ -769,7 +813,9 @@ async function loadRows(tab, genreId) {
   // Replace skeletons with real rows
   mainContent.innerHTML = '';
   results.forEach(r => {
-    if (r.items.length) createRow(r.title, r.items, r.endpoint, r.params);
+    if (!r.items.length) return;
+    if (r.top10) createTop10Row(r.title, r.items, r.endpoint, r.params);
+    else createRow(r.title, r.items, r.endpoint, r.params);
   });
 }
 

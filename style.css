@@ -857,6 +857,43 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════
+   TOP 10 ROW
+══════════════════════════════════════════════════════════ */
+.top10-item {
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    width: calc(var(--card-w) * 1.9);
+}
+
+.top10-rank {
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: calc(var(--card-w) * 1.5);
+    font-size: calc(var(--card-w) * 2.0);
+    font-weight: 900;
+    line-height: 0.82;
+    color: #111;
+    -webkit-text-stroke: 6px #505050;
+    paint-order: stroke fill;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+    letter-spacing: -8px;
+    font-style: italic;
+    text-align: center;
+}
+
+.top10-item .card {
+    flex: 0 0 var(--card-w);
+    z-index: 2;
+    position: relative;
+}
+
+/* ══════════════════════════════════════════════════════════
    GRID PAGE (See All)
 ══════════════════════════════════════════════════════════ */
 #grid-page {

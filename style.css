@@ -437,6 +437,7 @@ body {
     scrollbar-width: none;
     padding-bottom: 10px;
     will-change: scroll-position;
+    touch-action: pan-x;
 }
 
 .slider-track::-webkit-scrollbar {
@@ -1000,6 +1001,7 @@ body {
     padding: .6rem 4%;
     margin-top: 68px;
     will-change: scroll-position;
+    touch-action: pan-x;
 }
 
 #genre-bar::-webkit-scrollbar {
@@ -1089,9 +1091,9 @@ body {
         left: 0;
         right: 0;
         z-index: 850;
-        background: rgba(14, 14, 14, 0.97);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        /* No backdrop-filter: it creates an iOS Safari compositing layer
+           that silently swallows touch events on scroll containers above */
+        background: rgba(12, 12, 12, 0.98);
         border-top: 1px solid rgba(255, 255, 255, 0.07);
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }

@@ -410,9 +410,9 @@ body {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    touch-action: pan-x;
     scrollbar-width: none;
     padding-bottom: 10px;
+    will-change: scroll-position;
 }
 
 .slider-track::-webkit-scrollbar {
@@ -429,17 +429,19 @@ body {
     transition: transform var(--trans), z-index 0s;
 }
 
-.card:hover {
-    transform: scale(1.28);
-    z-index: 10;
-}
+@media (hover: hover) {
+    .card:hover {
+        transform: scale(1.28);
+        z-index: 10;
+    }
 
-.card:first-child:hover {
-    transform-origin: left center;
-}
+    .card:first-child:hover {
+        transform-origin: left center;
+    }
 
-.card:last-child:hover {
-    transform-origin: right center;
+    .card:last-child:hover {
+        transform-origin: right center;
+    }
 }
 
 .card-img-wrap {
@@ -462,8 +464,10 @@ body {
     pointer-events: none;
 }
 
-.card:hover .card-img-wrap img {
-    transform: scale(1.05);
+@media (hover: hover) {
+    .card:hover .card-img-wrap img {
+        transform: scale(1.05);
+    }
 }
 
 .card-overlay {
@@ -479,8 +483,10 @@ body {
     border-radius: var(--radius);
 }
 
-.card:hover .card-overlay {
-    opacity: 1;
+@media (hover: hover) {
+    .card:hover .card-overlay {
+        opacity: 1;
+    }
 }
 
 .card-play-btn {
@@ -962,10 +968,10 @@ body {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    touch-action: pan-x;
     scrollbar-width: none;
     padding: .6rem 4%;
     margin-top: 68px;
+    will-change: scroll-position;
 }
 
 #genre-bar::-webkit-scrollbar {

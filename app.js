@@ -511,15 +511,12 @@ function renderPlayer() {
 
 function playItem(item) {
   pushNav({ type: 'player', item });
+  closeModal();
   const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
   currentPlayItem = { item, isTV };
-
   renderPlayer();
-
   playerOverlay.classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  closeModal();
 }
 
 function closePlayer() {
@@ -937,21 +934,37 @@ window.addEventListener('popstate', e => {
       const tab = state?.tab || 'home';
       closePlayer();
       closeModal();
-      currentTab = tab;
-      setActiveNavLink($({ home: 'navHome', movies: 'navMovies', tv: 'navTV', trending: 'navTrending' }[tab]));
       hideSearchPage();
-      hideGridPage();
       searchInput.value = '';
       searchInput.classList.remove('open');
       searchOpen = false;
-      loadRows(tab, null);
+      const wasGrid = gridPage.classList.contains('active');
+      hideGridPage();
       currentGenreId = null;
+      setActiveNavLink($({ home: 'navHome', movies: 'navMovies', tv: 'navTV', trending: 'navTrending' }[tab]));
       buildGenreBar();
-      genreBar.querySelector('.genre-pill').classList.add('active');
+      const firstPill = genreBar.querySelector('.genre-pill');
+      if (firstPill) firstPill.classList.add('active');
+      // Only reload rows if switching tabs or content was replaced by the grid page
+      if (currentTab !== tab || wasGrid || mainContent.children.length === 0) {
+        currentTab = tab;
+        loadRows(tab, null);
+      } else {
+        currentTab = tab;
+      }
     } else if (state.type === 'grid') {
       closePlayer();
       closeModal();
-      openGridPage(state.title, state.endpoint, state.genreId, state.extraParams);
+      // Reuse existing grid DOM if the same grid is already loaded
+      const sameGrid = gridEndpoint === state.endpoint &&
+                       String(gridGenreId) === String(state.genreId ?? null) &&
+                       JSON.stringify(gridExtraParams) === JSON.stringify(state.extraParams || {});
+      if (sameGrid && gridContent.children.length > 0) {
+        showGridPage();
+        gridTitle.textContent = state.title;
+      } else {
+        openGridPage(state.title, state.endpoint, state.genreId, state.extraParams);
+      }
     } else if (state.type === 'modal') {
       closePlayer();
       openModal(state.item);

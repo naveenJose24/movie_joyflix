@@ -78,6 +78,9 @@ let gridCurrentPage = 1;
 let gridTotalPages = 1;
 let gridLoading = false;
 
+// History API — set true while restoring state so pushNav is a no-op
+let _skipPush = false;
+
 // ── DOM REFS ────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const navbar = $('navbar');
@@ -139,6 +142,10 @@ async function tmdb(endpoint, params = {}) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`TMDB error ${res.status}`);
   return res.json();
+}
+
+function pushNav(state) {
+  if (!_skipPush) history.pushState(state, '');
 }
 
 function showToast(msg, duration = 2500) {
@@ -326,6 +333,7 @@ function createCard(item, inGrid = false) {
 
 // ── MODAL ────────────────────────────────────────────────────
 async function openModal(item) {
+  pushNav({ type: 'modal', item });
   modalItem = item;
   const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
   const type = isTV ? 'tv' : 'movie';
@@ -453,9 +461,12 @@ function closeModal() {
   setTimeout(() => { modalBackdrop.src = ''; }, 400);
 }
 
-modalClose.onclick = closeModal;
-modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closePlayer(); } });
+modalClose.onclick = () => history.back();
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) history.back(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (playerOverlay.classList.contains('open') || modalOverlay.classList.contains('open')) history.back();
+});
 
 // ── TRAILER ───────────────────────────────────────────────────
 async function openTrailer(id, type) {
@@ -499,6 +510,7 @@ function renderPlayer() {
 }
 
 function playItem(item) {
+  pushNav({ type: 'player', item });
   const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
   currentPlayItem = { item, isTV };
 
@@ -507,7 +519,6 @@ function playItem(item) {
   playerOverlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  // Close modal if open
   closeModal();
 }
 
@@ -519,7 +530,7 @@ function closePlayer() {
   setTimeout(() => { playerIframe.src = ''; }, 400);
 }
 
-playerBack.onclick = closePlayer;
+playerBack.onclick = () => history.back();
 
 const playerProviderSelect = $('playerProviderSelect');
 if (playerProviderSelect) {
@@ -681,6 +692,7 @@ function switchView(tab) {
   searchInput.value = '';
   searchInput.classList.remove('open');
   searchOpen = false;
+  pushNav({ type: 'tab', tab });
   loadRows(tab, null);
   currentGenreId = null;
   buildGenreBar();
@@ -867,6 +879,7 @@ async function loadNextGridPage() {
 }
 
 async function openGridPage(title, endpoint, genreId, extraParams = {}) {
+  pushNav({ type: 'grid', title, endpoint, genreId: genreId || null, extraParams });
   gridEndpoint = endpoint;
   gridGenreId = genreId || null;
   gridExtraParams = extraParams;
@@ -913,15 +926,46 @@ document.addEventListener('click', e => {
   openGridPage(rowTitle, section.dataset.endpoint, null, extraParams);
 });
 
-gridBack.addEventListener('click', () => {
-  currentGenreId = null;
-  hideGridPage();
-  buildGenreBar();
-  genreBar.querySelector('.genre-pill').classList.add('active');
+gridBack.addEventListener('click', () => history.back());
+
+// ── HISTORY NAVIGATION ───────────────────────────────────────
+window.addEventListener('popstate', e => {
+  const state = e.state;
+  _skipPush = true;
+  try {
+    if (!state || state.type === 'tab') {
+      const tab = state?.tab || 'home';
+      closePlayer();
+      closeModal();
+      currentTab = tab;
+      setActiveNavLink($({ home: 'navHome', movies: 'navMovies', tv: 'navTV', trending: 'navTrending' }[tab]));
+      hideSearchPage();
+      hideGridPage();
+      searchInput.value = '';
+      searchInput.classList.remove('open');
+      searchOpen = false;
+      loadRows(tab, null);
+      currentGenreId = null;
+      buildGenreBar();
+      genreBar.querySelector('.genre-pill').classList.add('active');
+    } else if (state.type === 'grid') {
+      closePlayer();
+      closeModal();
+      openGridPage(state.title, state.endpoint, state.genreId, state.extraParams);
+    } else if (state.type === 'modal') {
+      closePlayer();
+      openModal(state.item);
+    } else if (state.type === 'player') {
+      playItem(state.item);
+    }
+  } finally {
+    _skipPush = false;
+  }
 });
 
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
+  history.replaceState({ type: 'tab', tab: 'home' }, '');
   buildGenreBar();
   genreBar.querySelector('.genre-pill').classList.add('active');
   await loadRows('home', null);
@@ -932,51 +976,6 @@ init().catch(err => {
   showToast('JoyFlix: Failed to load content. Check your TMDB API key.', 5000);
 });
 
-// ══════════════════════════════════════════════════════════════
-// HORIZONTAL TOUCH DRAG — iOS Safari fallback for row scrollers
-// ══════════════════════════════════════════════════════════════
-
-const horizontalTouchState = new WeakMap();
-
-document.addEventListener('touchstart', e => {
-  const track = e.target.closest('.slider-track, #genre-bar');
-  if (!track || e.touches.length !== 1) return;
-
-  horizontalTouchState.set(track, {
-    startX: e.touches[0].clientX,
-    startY: e.touches[0].clientY,
-    scrollLeft: track.scrollLeft,
-    lock: null,
-  });
-}, { passive: true });
-
-document.addEventListener('touchmove', e => {
-  const track = e.target.closest('.slider-track, #genre-bar');
-  if (!track || e.touches.length !== 1) return;
-
-  const state = horizontalTouchState.get(track);
-  if (!state) return;
-
-  const dx = e.touches[0].clientX - state.startX;
-  const dy = e.touches[0].clientY - state.startY;
-
-  if (state.lock === null) {
-    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-    state.lock = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
-  }
-
-  if (state.lock !== 'x' || track.scrollWidth <= track.clientWidth) return;
-
-  e.preventDefault();
-  track.scrollLeft = state.scrollLeft - dx;
-}, { passive: false });
-
-['touchend', 'touchcancel'].forEach(type => {
-  document.addEventListener(type, e => {
-    const track = e.target.closest('.slider-track, #genre-bar');
-    if (track) horizontalTouchState.delete(track);
-  }, { passive: true });
-});
 
 // ══════════════════════════════════════════════════════════════
 // HORIZONTAL ROW SCROLL — vertical wheel → horizontal scroll

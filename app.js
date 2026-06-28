@@ -1006,6 +1006,46 @@ init().catch(err => {
 
 
 // ══════════════════════════════════════════════════════════════
+// HORIZONTAL TOUCH DRAG — iOS Safari fallback for row scrollers
+// ══════════════════════════════════════════════════════════════
+
+const horizontalTouchState = new WeakMap();
+
+document.addEventListener('touchstart', e => {
+  const track = e.target.closest('.slider-track, #genre-bar');
+  if (!track || e.touches.length !== 1) return;
+  horizontalTouchState.set(track, {
+    startX: e.touches[0].clientX,
+    startY: e.touches[0].clientY,
+    scrollLeft: track.scrollLeft,
+    lock: null,
+  });
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  const track = e.target.closest('.slider-track, #genre-bar');
+  if (!track || e.touches.length !== 1) return;
+  const state = horizontalTouchState.get(track);
+  if (!state) return;
+  const dx = e.touches[0].clientX - state.startX;
+  const dy = e.touches[0].clientY - state.startY;
+  if (state.lock === null) {
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    state.lock = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+  }
+  if (state.lock !== 'x' || track.scrollWidth <= track.clientWidth) return;
+  e.preventDefault();
+  track.scrollLeft = state.scrollLeft - dx;
+}, { passive: false });
+
+['touchend', 'touchcancel'].forEach(type => {
+  document.addEventListener(type, e => {
+    const track = e.target.closest('.slider-track, #genre-bar');
+    if (track) horizontalTouchState.delete(track);
+  }, { passive: true });
+});
+
+// ══════════════════════════════════════════════════════════════
 // HORIZONTAL ROW SCROLL — vertical wheel → horizontal scroll
 // ══════════════════════════════════════════════════════════════
 

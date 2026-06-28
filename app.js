@@ -684,12 +684,23 @@ function setActiveNavLink(el) {
   if (bnEl) bnEl.classList.add('active');
 }
 
-navHome.onclick = e => { e.preventDefault(); currentTab = 'home'; currentGenreId = null; switchView('home'); };
+function goHome() {
+  const onHome = currentTab === 'home';
+  const noOverlay = !gridPage.classList.contains('active') && !searchPage.classList.contains('active');
+  if (onHome && noOverlay) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  currentGenreId = null;
+  switchView('home');
+}
+
+navHome.onclick = e => { e.preventDefault(); goHome(); };
 navMovies.onclick = e => { e.preventDefault(); currentTab = 'movies'; currentGenreId = null; switchView('movies'); };
 navTV.onclick = e => { e.preventDefault(); currentTab = 'tv'; currentGenreId = null; switchView('tv'); };
 navTrending.onclick = e => { e.preventDefault(); currentTab = 'trending'; currentGenreId = null; switchView('trending'); };
-homeBtn.onclick = e => { e.preventDefault(); currentTab = 'home'; currentGenreId = null; switchView('home'); };
-if (bnHome) bnHome.onclick = () => { currentTab = 'home'; currentGenreId = null; switchView('home'); };
+homeBtn.onclick = e => { e.preventDefault(); goHome(); };
+if (bnHome) bnHome.onclick = () => goHome();
 if (bnMovies) bnMovies.onclick = () => { currentTab = 'movies'; currentGenreId = null; switchView('movies'); };
 if (bnTV) bnTV.onclick = () => { currentTab = 'tv'; currentGenreId = null; switchView('tv'); };
 if (bnTrending) bnTrending.onclick = () => { currentTab = 'trending'; currentGenreId = null; switchView('trending'); };

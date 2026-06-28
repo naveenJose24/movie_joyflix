@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>JoyFlix – Watch Movies &amp; TV Shows</title>
   <meta name="description" content="JoyFlix – Browse and stream the latest movies and TV shows in HD. Powered by TMDB." />
   <link rel="stylesheet" href="style.css" />
@@ -131,6 +131,26 @@
 
   <!-- ════════════════ TOAST ════════════════ -->
   <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ════════════════ BOTTOM NAV (mobile) ════════════════ -->
+  <nav id="bottom-nav" aria-label="Main navigation">
+    <button class="bn-btn active" id="bnHome">
+      <i class="ph-fill ph-house-simple"></i>
+      <span>Home</span>
+    </button>
+    <button class="bn-btn" id="bnMovies">
+      <i class="ph-fill ph-film-slate"></i>
+      <span>Movies</span>
+    </button>
+    <button class="bn-btn" id="bnTV">
+      <i class="ph-fill ph-television-simple"></i>
+      <span>TV Shows</span>
+    </button>
+    <button class="bn-btn" id="bnTrending">
+      <i class="ph-fill ph-fire-simple"></i>
+      <span>Trending</span>
+    </button>
+  </nav>
 
   <script src="app.js"></script>
 </body>

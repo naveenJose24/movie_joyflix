@@ -126,6 +126,10 @@ const gridContent = $('gridContent');
 const gridTitle = $('gridTitle');
 const gridBack = $('gridBack');
 const gridSentinel = $('gridSentinel');
+const bnHome = $('bnHome');
+const bnMovies = $('bnMovies');
+const bnTV = $('bnTV');
+const bnTrending = $('bnTrending');
 
 // ── UTILS ────────────────────────────────────────────────────
 const img = (path, size = 'w500') =>
@@ -670,9 +674,14 @@ function buildGenreBar() {
 }
 
 // ── TABS ─────────────────────────────────────────────────────
+const _bnMap = { navHome: bnHome, navMovies: bnMovies, navTV: bnTV, navTrending: bnTrending };
+
 function setActiveNavLink(el) {
   [navHome, navMovies, navTV, navTrending].forEach(x => x.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
+  [bnHome, bnMovies, bnTV, bnTrending].filter(Boolean).forEach(x => x.classList.remove('active'));
+  const bnEl = _bnMap[el?.id];
+  if (bnEl) bnEl.classList.add('active');
 }
 
 navHome.onclick = e => { e.preventDefault(); currentTab = 'home'; currentGenreId = null; switchView('home'); };
@@ -680,6 +689,10 @@ navMovies.onclick = e => { e.preventDefault(); currentTab = 'movies'; currentGen
 navTV.onclick = e => { e.preventDefault(); currentTab = 'tv'; currentGenreId = null; switchView('tv'); };
 navTrending.onclick = e => { e.preventDefault(); currentTab = 'trending'; currentGenreId = null; switchView('trending'); };
 homeBtn.onclick = e => { e.preventDefault(); currentTab = 'home'; currentGenreId = null; switchView('home'); };
+if (bnHome) bnHome.onclick = () => { currentTab = 'home'; currentGenreId = null; switchView('home'); };
+if (bnMovies) bnMovies.onclick = () => { currentTab = 'movies'; currentGenreId = null; switchView('movies'); };
+if (bnTV) bnTV.onclick = () => { currentTab = 'tv'; currentGenreId = null; switchView('tv'); };
+if (bnTrending) bnTrending.onclick = () => { currentTab = 'trending'; currentGenreId = null; switchView('trending'); };
 
 function switchView(tab) {
   currentTab = tab;
@@ -979,8 +992,10 @@ window.addEventListener('popstate', e => {
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
   history.replaceState({ type: 'tab', tab: 'home' }, '');
+  setActiveNavLink(navHome);
   buildGenreBar();
-  genreBar.querySelector('.genre-pill').classList.add('active');
+  const firstPill = genreBar.querySelector('.genre-pill');
+  if (firstPill) firstPill.classList.add('active');
   await loadRows('home', null);
 }
 

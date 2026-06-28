@@ -1014,11 +1014,15 @@ const horizontalTouchState = new WeakMap();
 document.addEventListener('touchstart', e => {
   const track = e.target.closest('.slider-track, #genre-bar');
   if (!track || e.touches.length !== 1) return;
+  if (track._momentumId) { cancelAnimationFrame(track._momentumId); track._momentumId = null; }
   horizontalTouchState.set(track, {
     startX: e.touches[0].clientX,
     startY: e.touches[0].clientY,
     scrollLeft: track.scrollLeft,
     lock: null,
+    lastX: e.touches[0].clientX,
+    lastTime: Date.now(),
+    velocity: 0,
   });
 }, { passive: true });
 
@@ -1035,13 +1039,30 @@ document.addEventListener('touchmove', e => {
   }
   if (state.lock !== 'x' || track.scrollWidth <= track.clientWidth) return;
   e.preventDefault();
+  const now = Date.now();
+  const dt = now - state.lastTime;
+  if (dt > 0) state.velocity = (state.lastX - e.touches[0].clientX) / dt;
+  state.lastX = e.touches[0].clientX;
+  state.lastTime = now;
   track.scrollLeft = state.scrollLeft - dx;
 }, { passive: false });
 
 ['touchend', 'touchcancel'].forEach(type => {
   document.addEventListener(type, e => {
     const track = e.target.closest('.slider-track, #genre-bar');
-    if (track) horizontalTouchState.delete(track);
+    if (!track) return;
+    const state = horizontalTouchState.get(track);
+    if (state && state.lock === 'x' && type === 'touchend') {
+      let v = state.velocity * 16;
+      const step = () => {
+        if (Math.abs(v) < 0.5) { track._momentumId = null; return; }
+        track.scrollLeft += v;
+        v *= 0.92;
+        track._momentumId = requestAnimationFrame(step);
+      };
+      track._momentumId = requestAnimationFrame(step);
+    }
+    horizontalTouchState.delete(track);
   }, { passive: true });
 });
 

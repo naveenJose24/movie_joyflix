@@ -33,7 +33,7 @@
 
 html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
+    overflow-x: clip; /* clip (not hidden) avoids creating a scroll container that blocks child overflow on iOS */
 }
 
 body {
@@ -437,7 +437,6 @@ body {
     scrollbar-width: none;
     padding-bottom: 10px;
     will-change: scroll-position;
-    touch-action: pan-x;
 }
 
 .slider-track::-webkit-scrollbar {
@@ -1001,7 +1000,6 @@ body {
     padding: .6rem 4%;
     margin-top: 68px;
     will-change: scroll-position;
-    touch-action: pan-x;
 }
 
 #genre-bar::-webkit-scrollbar {

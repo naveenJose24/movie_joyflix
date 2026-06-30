@@ -5,6 +5,11 @@
 
 'use strict';
 
+if (window.__TAURI_INTERNALS__) {
+  document.documentElement.classList.add('tauri');
+}
+
+
 // ── CONFIG ──────────────────────────────────────────────────
 const TMDB_KEY = '2dca580c2a14b55200e784d157207b4d'; // public demo key
 const TMDB_BASE = 'https://api.themoviedb.org/3';
@@ -148,8 +153,33 @@ async function tmdb(endpoint, params = {}) {
   return res.json();
 }
 
+function slimItem(item) {
+  // WKWebView caps history state at ~640KB — store only what popstate needs
+  return {
+    id: item.id,
+    media_type: item.media_type,
+    title: item.title || item.name,
+    name: item.name,
+    poster_path: item.poster_path,
+    backdrop_path: item.backdrop_path,
+    overview: item.overview,
+    release_date: item.release_date,
+    first_air_date: item.first_air_date,
+    vote_average: item.vote_average,
+    genre_ids: item.genre_ids,
+  };
+}
+
 function pushNav(state) {
-  if (!_skipPush) history.pushState(state, '');
+  if (_skipPush) return;
+  try {
+    history.pushState(state, '');
+  } catch (e) {
+    // State too large (WKWebView limit) — retry with slimmed item
+    if (state.item) {
+      try { history.pushState({ ...state, item: slimItem(state.item) }, ''); } catch (_) {}
+    }
+  }
 }
 
 function showToast(msg, duration = 2500) {
@@ -337,7 +367,7 @@ function createCard(item, inGrid = false) {
 
 // ── MODAL ────────────────────────────────────────────────────
 async function openModal(item) {
-  pushNav({ type: 'modal', item });
+  pushNav({ type: 'modal', item: slimItem(item) });
   modalItem = item;
   const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
   const type = isTV ? 'tv' : 'movie';
@@ -514,7 +544,7 @@ function renderPlayer() {
 }
 
 function playItem(item) {
-  pushNav({ type: 'player', item });
+  pushNav({ type: 'player', item: slimItem(item) });
   closeModal();
   const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
   currentPlayItem = { item, isTV };
@@ -1078,15 +1108,66 @@ document.addEventListener('touchmove', e => {
 });
 
 // ══════════════════════════════════════════════════════════════
-// HORIZONTAL ROW SCROLL — vertical wheel → horizontal scroll
+// WHEEL SCROLL — vertical redirect to horizontal on slider rows
+// Two-finger horizontal swipes (deltaX) are intentionally not
+// intercepted here — the browser/WKWebView handles them natively
+// via overflow-x: scroll, preserving macOS momentum/inertia.
 // ══════════════════════════════════════════════════════════════
 
 document.addEventListener('wheel', e => {
-  if (e.target.closest('.card')) return; // let cards pass through to vertical page scroll
-  const track = e.target.closest('.slider-track, #genre-bar');
-  if (!track) return;
-  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-  if (track.scrollWidth <= track.clientWidth) return;
+  // elementFromPoint is more reliable than e.target in WKWebView (Tauri)
+  const el = document.elementFromPoint(e.clientX, e.clientY) || e.target;
+  const track = el.closest('.slider-track, #genre-bar');
+  if (!track || track.scrollWidth <= track.clientWidth) return;
+
+  const absDx = Math.abs(e.deltaX);
+  const absDy = Math.abs(e.deltaY);
+
+  // Primarily horizontal — let native browser/WKWebView scroll handle it
+  if (absDx >= absDy) return;
+
+  // Primarily vertical wheel over a slider row — redirect to horizontal
+  if (el.closest('.card')) return;  // vertical scroll over a card scrolls the page
   e.preventDefault();
   track.scrollLeft += e.deltaY;
 }, { passive: false });
+
+// ══════════════════════════════════════════════════════════════
+// POINTER DRAG — mouse/stylus drag for desktop (Tauri / browser)
+// ══════════════════════════════════════════════════════════════
+
+let _drag = null;
+
+document.addEventListener('pointerdown', e => {
+  const track = e.target.closest('.slider-track, #genre-bar');
+  if (!track || e.pointerType === 'touch') return;
+  // Don't capture yet — wait for drag threshold so normal clicks still work
+  _drag = { track, startX: e.clientX, scrollLeft: track.scrollLeft, pointerId: e.pointerId, active: false };
+});
+
+document.addEventListener('pointermove', e => {
+  if (!_drag) return;
+  const dx = e.clientX - _drag.startX;
+  if (!_drag.active) {
+    if (Math.abs(dx) < 5) return; // below threshold — still a click
+    _drag.active = true;
+    _drag.track.setPointerCapture(_drag.pointerId);
+    _drag.track.style.cursor = 'grabbing';
+    _drag.track.style.userSelect = 'none';
+  }
+  _drag.track.scrollLeft = _drag.scrollLeft - dx;
+});
+
+document.addEventListener('pointerup', () => {
+  if (!_drag) return;
+  _drag.track.style.cursor = '';
+  _drag.track.style.userSelect = '';
+  _drag = null;
+});
+
+document.addEventListener('pointercancel', () => {
+  if (!_drag) return;
+  _drag.track.style.cursor = '';
+  _drag.track.style.userSelect = '';
+  _drag = null;
+});

@@ -8,11 +8,18 @@
     "type": "git",
     "url": "git+https://github.com/naveenld024/movie.git"
   },
+  "scripts": {
+    "tauri": "tauri",
+    "build:dmg": "mkdir -p dist && cp index.html style.css app.js dist/ && tauri build"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/naveenld024/movie/issues"
   },
-  "homepage": "https://github.com/naveenld024/movie#readme"
+  "homepage": "https://github.com/naveenld024/movie#readme",
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.3"
+  }
 }

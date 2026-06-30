@@ -40,7 +40,7 @@ body {
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 /* ── Focus Indicator ───────────────────────── */
@@ -458,6 +458,26 @@ body {
     scrollbar-width: none;
     padding-bottom: 10px;
     will-change: scroll-position;
+    cursor: grab;
+}
+
+.slider-track:active {
+    cursor: grabbing;
+}
+
+/* Tauri: force scroll mode + remove will-change so WKScrollView can natively route
+   two-finger horizontal swipes to these elements */
+.tauri .slider-track,
+.tauri #genre-bar {
+    overflow-x: scroll;
+    will-change: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tauri .slider-track::-webkit-scrollbar,
+.tauri #genre-bar::-webkit-scrollbar {
+    display: none;
 }
 
 .slider-track::-webkit-scrollbar {

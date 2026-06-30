@@ -10,6 +10,59 @@ const TMDB_KEY = '2dca580c2a14b55200e784d157207b4d'; // public demo key
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 const PROVIDER_STORE = 'joyflix_provider';
+const LANG_STORE     = 'joyflix_lang';
+const LANGS_STORE    = 'joyflix_langs';
+const REGION_STORE   = 'joyflix_region';
+const WELCOMED_KEY   = 'joyflix_welcomed';
+
+const LANGUAGES = [
+  // International
+  { code: 'en-US', tmdb: 'en', name: 'English',    flag: '🇺🇸', region: 'US' },
+  { code: 'es-ES', tmdb: 'es', name: 'Español',    flag: '🇪🇸', region: 'ES' },
+  { code: 'fr-FR', tmdb: 'fr', name: 'Français',   flag: '🇫🇷', region: 'FR' },
+  { code: 'de-DE', tmdb: 'de', name: 'Deutsch',    flag: '🇩🇪', region: 'DE' },
+  { code: 'ja-JP', tmdb: 'ja', name: '日本語',      flag: '🇯🇵', region: 'JP' },
+  { code: 'ko-KR', tmdb: 'ko', name: '한국어',      flag: '🇰🇷', region: 'KR' },
+  { code: 'pt-BR', tmdb: 'pt', name: 'Português',  flag: '🇧🇷', region: 'BR' },
+  { code: 'it-IT', tmdb: 'it', name: 'Italiano',   flag: '🇮🇹', region: 'IT' },
+  { code: 'ar-SA', tmdb: 'ar', name: 'العربية',    flag: '🇸🇦', region: 'SA' },
+  { code: 'zh-CN', tmdb: 'zh', name: '中文',        flag: '🇨🇳', region: 'CN' },
+  { code: 'ru-RU', tmdb: 'ru', name: 'Русский',    flag: '🇷🇺', region: 'RU' },
+  { code: 'tr-TR', tmdb: 'tr', name: 'Türkçe',     flag: '🇹🇷', region: 'TR' },
+  { code: 'th-TH', tmdb: 'th', name: 'ภาษาไทย',    flag: '🇹🇭', region: 'TH' },
+  { code: 'id-ID', tmdb: 'id', name: 'Indonesia',  flag: '🇮🇩', region: 'ID' },
+  // Indian languages
+  { code: 'hi-IN', tmdb: 'hi', name: 'हिन्दी',     flag: '🇮🇳', region: 'IN' },
+  { code: 'ml-IN', tmdb: 'ml', name: 'മലയാളം',     flag: '🇮🇳', region: 'IN' },
+  { code: 'ta-IN', tmdb: 'ta', name: 'தமிழ்',       flag: '🇮🇳', region: 'IN' },
+  { code: 'te-IN', tmdb: 'te', name: 'తెలుగు',      flag: '🇮🇳', region: 'IN' },
+  { code: 'kn-IN', tmdb: 'kn', name: 'ಕನ್ನಡ',       flag: '🇮🇳', region: 'IN' },
+  { code: 'bn-IN', tmdb: 'bn', name: 'বাংলা',       flag: '🇧🇩', region: 'IN' },
+  { code: 'mr-IN', tmdb: 'mr', name: 'मराठी',       flag: '🇮🇳', region: 'IN' },
+  { code: 'pa-IN', tmdb: 'pa', name: 'ਪੰਜਾਬੀ',      flag: '🇮🇳', region: 'IN' },
+  { code: 'gu-IN', tmdb: 'gu', name: 'ગુજરાતી',     flag: '🇮🇳', region: 'IN' },
+  { code: 'ur-PK', tmdb: 'ur', name: 'اردو',         flag: '🇵🇰', region: 'PK' },
+];
+
+const REGIONS = [
+  { code: 'US', name: 'United States' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'IN', name: 'India' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'FR', name: 'France' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'KR', name: 'South Korea' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'SA', name: 'Saudi Arabia' },
+  { code: 'CN', name: 'China' },
+  { code: 'RU', name: 'Russia' },
+  { code: 'TR', name: 'Turkey' },
+];
 
 // Ported from github.com/ikku47/stream-it-app (src/lib/providers.ts)
 const PROVIDERS = [
@@ -59,6 +112,10 @@ const PROVIDERS = [
 const DEFAULT_PROVIDER = 'vidlink';
 
 // ── STATE ────────────────────────────────────────────────────
+let userLangs  = JSON.parse(localStorage.getItem(LANGS_STORE) || '["en-US"]');
+let userLang   = userLangs[0];
+let userRegion = localStorage.getItem(REGION_STORE) || 'US';
+
 let currentTab = 'home';   // home | movies | tv | trending
 let currentGenreId = null;
 let searchOpen = false;
@@ -138,10 +195,16 @@ const img = (path, size = 'w500') =>
 const imgFallback = (path, size) =>
   img(path, size) || `https://via.placeholder.com/300x450/1a1a1a/666?text=No+Image`;
 
+const REGION_ENDPOINTS = new Set([
+  '/movie/popular', '/movie/top_rated', '/movie/now_playing', '/movie/upcoming',
+  '/tv/popular', '/tv/top_rated', '/tv/airing_today', '/tv/on_the_air',
+]);
+
 async function tmdb(endpoint, params = {}) {
   const url = new URL(`${TMDB_BASE}${endpoint}`);
   url.searchParams.set('api_key', TMDB_KEY);
-  url.searchParams.set('language', 'en-US');
+  url.searchParams.set('language', userLang);
+  if (REGION_ENDPOINTS.has(endpoint)) url.searchParams.set('region', userRegion);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   const res = await fetch(url);
   if (!res.ok) throw new Error(`TMDB error ${res.status}`);
@@ -807,11 +870,48 @@ const ROW_CONFIG = {
   ],
 };
 
+function getLangRows(type = 'all') {
+  const extraRows = [];
+  const langNames = { ml: 'Malayalam', ta: 'Tamil', te: 'Telugu', kn: 'Kannada',
+    hi: 'Hindi', bn: 'Bengali', mr: 'Marathi', pa: 'Punjabi', gu: 'Gujarati',
+    ur: 'Urdu', ja: 'Japanese', ko: 'Korean', zh: 'Chinese', th: 'Thai',
+    id: 'Indonesian', ar: 'Arabic', ru: 'Russian', tr: 'Turkish', fr: 'French',
+    de: 'German', es: 'Spanish', pt: 'Portuguese', it: 'Italian' };
+
+  userLangs.forEach(code => {
+    const lang = LANGUAGES.find(l => l.code === code);
+    if (!lang || lang.tmdb === 'en') return;
+    const label = langNames[lang.tmdb] || lang.name;
+    if (type !== 'tv') {
+      extraRows.push(
+        { title: `${lang.flag} Popular ${label} Movies`,   endpoint: D_MOVIE, params: { with_original_language: lang.tmdb, sort_by: 'popularity.desc' } },
+        { title: `${lang.flag} Top Rated ${label} Movies`, endpoint: D_MOVIE, params: { with_original_language: lang.tmdb, sort_by: 'vote_average.desc', 'vote_count.gte': 50 } },
+        { title: `${lang.flag} New ${label} Movies`,       endpoint: D_MOVIE, params: { with_original_language: lang.tmdb, sort_by: 'release_date.desc', 'vote_count.gte': 10 } },
+      );
+    }
+    if (type !== 'movie') {
+      extraRows.push(
+        { title: `${lang.flag} Popular ${label} TV`,       endpoint: D_TV,    params: { with_original_language: lang.tmdb, sort_by: 'popularity.desc' } },
+      );
+    }
+  });
+  return extraRows;
+}
+
 async function loadRows(tab, genreId) {
   mainContent.innerHTML = '';
   hero.style.display = '';
 
-  const rows = ROW_CONFIG[tab] || ROW_CONFIG.home;
+  const baseRows = ROW_CONFIG[tab] || ROW_CONFIG.home;
+  const langRows = tab === 'home' ? getLangRows('all')
+                 : tab === 'movies' ? getLangRows('movie')
+                 : tab === 'tv' ? getLangRows('tv')
+                 : [];
+  // Insert language rows after first 2 base rows so they're visible without deep scrolling
+  const splitAt = Math.min(2, baseRows.length);
+  const rows = langRows.length
+    ? [...baseRows.slice(0, splitAt), ...langRows, ...baseRows.slice(splitAt)]
+    : baseRows;
 
   // Skeleton placeholders
   rows.forEach(r => {
@@ -1000,6 +1100,151 @@ window.addEventListener('popstate', e => {
   }
 });
 
+// ── SETTINGS MODAL ───────────────────────────────────────────
+const settingsOv    = $('settings-overlay');
+const settingsClose = $('settingsClose');
+
+function renderLangGrid(containerId, selectedCodes, onChange) {
+  const grid = $(containerId);
+  if (!grid) return;
+
+  const refresh = () => {
+    grid.innerHTML = LANGUAGES.map((l, i) => {
+      const idx = selectedCodes.indexOf(l.code);
+      const sel = idx !== -1;
+      const isPrimary = idx === 0;
+      return `
+        <button class="lang-btn${sel ? ' selected' : ''}" data-code="${l.code}" data-region="${l.region}" data-tmdb="${l.tmdb}">
+          ${isPrimary ? '<span class="lang-primary-badge">★</span>' : ''}
+          <span class="lang-flag">${l.flag}</span>
+          <span class="lang-name">${l.name}</span>
+          ${sel ? '<span class="lang-check">✓</span>' : ''}
+        </button>
+      `;
+    }).join('');
+
+    grid.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = btn.dataset.code;
+        const idx  = selectedCodes.indexOf(code);
+        if (idx !== -1) {
+          if (selectedCodes.length === 1) return; // keep at least 1
+          selectedCodes.splice(idx, 1);
+        } else {
+          selectedCodes.push(code);
+        }
+        onChange(selectedCodes);
+        refresh();
+      });
+    });
+  };
+
+  refresh();
+}
+
+function populateSettingsSelects() {
+  const regionSel   = $('settingsRegion');
+  const providerSel = $('settingsProvider');
+
+  if (regionSel) regionSel.innerHTML = REGIONS.map(r =>
+    `<option value="${r.code}">${r.name}</option>`
+  ).join('');
+
+  if (providerSel) providerSel.innerHTML = PROVIDERS.map(p =>
+    `<option value="${p.id}">${p.name}</option>`
+  ).join('');
+}
+
+let _settingsLangs = [];
+
+function openSettings() {
+  _settingsLangs = [...userLangs];
+  renderLangGrid('settingsLangGrid', _settingsLangs, codes => { _settingsLangs = codes; });
+  $('settingsRegion').value   = userRegion;
+  $('settingsProvider').value = currentProviderId;
+  settingsOv.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSettings() {
+  settingsOv.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function saveSettings() {
+  const newLangs    = _settingsLangs.length ? _settingsLangs : ['en-US'];
+  const newLang     = newLangs[0];
+  const newRegion   = $('settingsRegion').value;
+  const newProvider = $('settingsProvider').value;
+
+  const langChanged = JSON.stringify(newLangs) !== JSON.stringify(userLangs);
+  userLangs         = newLangs;
+  userLang          = newLang;
+  userRegion        = newRegion;
+  currentProviderId = newProvider;
+
+  localStorage.setItem(LANGS_STORE,    JSON.stringify(userLangs));
+  localStorage.setItem(LANG_STORE,     userLang);
+  localStorage.setItem(REGION_STORE,   userRegion);
+  localStorage.setItem(PROVIDER_STORE, currentProviderId);
+
+  if (langChanged) _genreMap = null;
+
+  closeSettings();
+  showToast('Settings saved!');
+
+  if (langChanged) {
+    mainContent.innerHTML = '';
+    loadRows(currentTab, null);
+  }
+}
+
+if (settingsClose)              settingsClose.onclick = closeSettings;
+if ($('saveSettingsBtn'))       $('saveSettingsBtn').onclick = saveSettings;
+if ($('settingsBtn'))           $('settingsBtn').onclick = openSettings;
+settingsOv?.addEventListener('click', e => { if (e.target === settingsOv) closeSettings(); });
+
+// ── ONBOARDING POPUP ─────────────────────────────────────────
+function buildOnboarding() {
+  let pickedLangs = [...userLangs];
+
+  const overlay = document.createElement('div');
+  overlay.id = 'onboarding-overlay';
+  overlay.innerHTML = `
+    <div class="onboarding-box">
+      <div class="onboarding-logo">
+        <i class="ph-fill ph-film-strip"></i> Joy<span>Flix</span>
+      </div>
+      <h2 class="onboarding-title">Welcome! Choose your languages</h2>
+      <p class="onboarding-sub">Select one or more — first pick sets the primary language for titles</p>
+      <div class="lang-grid" id="onboardLangGrid"></div>
+      <button class="btn-play onboarding-start" id="onboardingStart">
+        <i class="ph-fill ph-play"></i> Get Started
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  renderLangGrid('onboardLangGrid', pickedLangs, codes => { pickedLangs = codes; });
+
+  overlay.querySelector('#onboardingStart').addEventListener('click', () => {
+    userLangs  = pickedLangs.length ? pickedLangs : ['en-US'];
+    userLang   = userLangs[0];
+    const prim = LANGUAGES.find(l => l.code === userLang);
+    userRegion = prim?.region || 'US';
+    localStorage.setItem(LANGS_STORE,  JSON.stringify(userLangs));
+    localStorage.setItem(LANG_STORE,   userLang);
+    localStorage.setItem(REGION_STORE, userRegion);
+    localStorage.setItem(WELCOMED_KEY, '1');
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.remove(), 400);
+    // reload with chosen languages
+    _genreMap = null;
+    loadRows(currentTab, null);
+  });
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
   history.replaceState({ type: 'tab', tab: 'home' }, '');
@@ -1007,6 +1252,8 @@ async function init() {
   buildGenreBar();
   const firstPill = genreBar.querySelector('.genre-pill');
   if (firstPill) firstPill.classList.add('active');
+  populateSettingsSelects();
+  if (!localStorage.getItem(WELCOMED_KEY)) buildOnboarding();
   await loadRows('home', null);
 }
 

@@ -30,6 +30,9 @@
         <i class="ph ph-magnifying-glass search-icon" id="searchToggle" title="Search"></i>
         <input type="text" id="searchInput" placeholder="Search movies, shows…" autocomplete="off" />
       </div>
+      <button class="settings-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+        <i class="ph ph-gear-six"></i>
+      </button>
       <div class="avatar" title="My Profile">JF</div>
     </div>
   </nav>
@@ -151,6 +154,38 @@
       <span>Trending</span>
     </button>
   </nav>
+
+  <!-- ════════════════ SETTINGS MODAL ════════════════ -->
+  <div id="settings-overlay" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="settings-modal">
+      <div class="settings-header">
+        <h2><i class="ph ph-gear-six"></i> Settings</h2>
+        <button class="modal-close" id="settingsClose" title="Close"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-group">
+          <label class="settings-label">Languages</label>
+          <p class="settings-desc">Select one or more. First selected = primary language for titles &amp; descriptions.</p>
+          <div class="lang-grid settings-lang-grid" id="settingsLangGrid"></div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label" for="settingsRegion">Content Region</label>
+          <p class="settings-desc">Region for Now Playing and Upcoming lists</p>
+          <select class="settings-select" id="settingsRegion"></select>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label" for="settingsProvider">Default Streaming Server</label>
+          <p class="settings-desc">Preferred server when playing content</p>
+          <select class="settings-select" id="settingsProvider"></select>
+        </div>
+      </div>
+      <div class="settings-footer">
+        <button class="btn-play" id="saveSettingsBtn">
+          <i class="ph-fill ph-check"></i> Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

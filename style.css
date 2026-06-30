@@ -1242,3 +1242,308 @@ body {
         letter-spacing: -4px;
     }
 }
+
+/* ══════════════════════════════════════════════════════════
+   SETTINGS MODAL
+══════════════════════════════════════════════════════════ */
+#settings-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--trans);
+}
+
+#settings-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.settings-modal {
+    background: var(--bg-modal);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transform: scale(0.95);
+    transition: transform var(--trans);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#settings-overlay.open .settings-modal {
+    transform: scale(1);
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    flex-shrink: 0;
+}
+
+.settings-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--white);
+}
+
+.settings-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.settings-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--white);
+}
+
+.settings-desc {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 0.35rem;
+}
+
+.settings-select {
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 0.65rem 2.2rem 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    width: 100%;
+    cursor: pointer;
+    transition: border-color var(--trans);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23aaa' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: var(--red);
+}
+
+.settings-footer {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.settings-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0.3rem;
+    display: flex;
+    align-items: center;
+    transition: color var(--trans);
+    flex-shrink: 0;
+}
+
+.settings-btn:hover {
+    color: var(--white);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ONBOARDING POPUP
+══════════════════════════════════════════════════════════ */
+#onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.97);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: fadeInOb 0.4s ease;
+}
+
+#onboarding-overlay.fade-out {
+    animation: fadeOutOb 0.4s ease forwards;
+}
+
+@keyframes fadeInOb  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOutOb { from { opacity: 1; } to { opacity: 0; } }
+
+.onboarding-box {
+    background: var(--bg-modal);
+    border-radius: 20px;
+    padding: 2.5rem 2rem 2rem;
+    max-width: 720px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: scaleInOb 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes scaleInOb {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+.onboarding-logo {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--red);
+    letter-spacing: -1px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.onboarding-logo span { color: var(--white); }
+
+.onboarding-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    color: var(--white);
+}
+
+.onboarding-sub {
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    margin-bottom: 1.5rem;
+}
+
+.lang-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 1.8rem;
+    text-align: left;
+}
+
+.lang-btn {
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 0.7rem 0.5rem;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all var(--trans);
+    font-family: inherit;
+}
+
+.lang-btn:hover {
+    border-color: var(--red);
+    background: rgba(229, 9, 20, 0.1);
+}
+
+.lang-btn.selected {
+    border-color: var(--red);
+    background: rgba(229, 9, 20, 0.18);
+}
+
+.lang-flag {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.lang-name {
+    font-weight: 500;
+    font-size: 0.78rem;
+    color: var(--text);
+    text-align: center;
+}
+
+.lang-check {
+    position: absolute;
+    top: 5px;
+    right: 7px;
+    font-size: 0.7rem;
+    color: var(--red);
+    font-weight: 700;
+}
+
+.lang-primary-badge {
+    position: absolute;
+    top: 5px;
+    left: 7px;
+    font-size: 0.65rem;
+    color: #f5c518;
+    font-weight: 700;
+}
+
+.lang-btn {
+    position: relative;
+}
+
+.settings-lang-grid {
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.2);
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.4rem;
+}
+
+.settings-lang-grid .lang-btn {
+    padding: 0.5rem 0.4rem;
+}
+
+.settings-lang-grid .lang-flag {
+    font-size: 1.2rem;
+}
+
+.settings-lang-grid .lang-name {
+    font-size: 0.7rem;
+}
+
+.onboarding-start {
+    margin: 0 auto;
+    min-width: 160px;
+    display: inline-flex;
+}
+
+@media (max-width: 480px) {
+    .onboarding-box {
+        padding: 1.8rem 1.2rem 1.5rem;
+    }
+
+    .lang-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

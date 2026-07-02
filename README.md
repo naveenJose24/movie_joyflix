@@ -10,6 +10,7 @@ Static web app for browsing movies/TV via TMDB, streamed through tmdbplayer.nune
 
 ## Run locally
 
+
 Serve the root directory with any static file server, e.g.:
 
 ```bash

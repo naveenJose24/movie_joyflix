@@ -1,0 +1,187 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-joyflix-red: #e50914;
+  --color-joyflix-bg: #141414;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --card-width: clamp(118px, 14vw, 188px);
+}
+
+@layer base {
+  html {
+    height: auto;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  body {
+    @apply bg-joyflix-bg text-neutral-200 min-h-screen overflow-x-clip font-sans antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-white outline-offset-2;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 99px;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  .text-shadow-hero {
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 50%, #1e1e1e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+
+  .top10-slide {
+    --top10-gutter: calc(var(--card-width) * 0.22);
+    position: relative;
+    flex-shrink: 0;
+    width: calc(var(--card-width) + var(--top10-gutter));
+    padding-left: var(--top10-gutter);
+  }
+
+  .top10-poster {
+    width: var(--card-width);
+    position: relative;
+    z-index: 1;
+  }
+
+  .top10-rank {
+    position: absolute;
+    left: calc(var(--top10-gutter) * 0.05);
+    bottom: 0.35rem;
+    z-index: 20;
+    font-size: clamp(2.25rem, calc(var(--card-width) * 0.9), 4rem);
+    font-weight: 900;
+    line-height: 1;
+    font-style: italic;
+    letter-spacing: -0.08em;
+    color: rgba(255, 255, 255, 0.1);
+    -webkit-text-stroke: 2px rgba(255, 255, 255, 0.9);
+    paint-order: stroke fill;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  }
+
+  .media-row-scroll {
+    @apply flex gap-3 overflow-x-auto overscroll-x-contain scrollbar-none;
+    padding-inline: 4%;
+    padding-bottom: 0.75rem;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+  }
+
+  .media-row-scroll.is-dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  .media-row-scroll.is-dragging * {
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    .media-row-scroll {
+      padding-inline: 3%;
+    }
+  }
+
+  .settings-select {
+    @apply bg-neutral-800 border border-white/12 rounded-lg text-neutral-200 px-3.5 py-2.5 text-sm cursor-pointer transition-colors;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23aaa' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    padding-right: 2.2rem;
+  }
+
+  .settings-select:focus {
+    @apply outline-none border-joyflix-red;
+  }
+
+  .spinner-small {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+    margin: 0;
+  }
+}
+
+/* Tauri WKWebView — native momentum scroll for horizontal lists */
+.tauri .genre-bar-scroll,
+.tauri .media-row-scroll {
+  overflow-x: scroll;
+  will-change: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tauri .genre-bar-scroll::-webkit-scrollbar,
+.tauri .media-row-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fade-in { animation: fade-in 0.4s ease; }
+.animate-fade-out { animation: fade-out 0.4s ease forwards; }
+.animate-scale-in { animation: scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@media (max-width: 480px) {
+  .top10-slide {
+    --top10-gutter: calc(var(--card-width) * 0.2);
+  }
+
+  .top10-rank {
+    font-size: clamp(2rem, calc(var(--card-width) * 0.85), 3.5rem);
+    left: calc(var(--top10-gutter) * 0.08);
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.9);
+  }
+}

@@ -74,13 +74,7 @@ export const PROVIDERS: Provider[] = [
     movie: (id) => `https://cinesrc.st/embed/movie/${id}?color=%23e50914`,
     tv: (id, s, e) => `https://cinesrc.st/embed/tv/${id}?s=${s}&e=${e}&color=%23e50914`,
   },
-  {
-    id: 'mapple',
-    name: 'Mapple Player',
-    movie: (id) => `https://mapple.fun/watch/movie/${id}?autoPlay=true&theme=E50914`,
-    tv: (id, s, e) => `https://mapple.fun/watch/tv/${id}-${s}-${e}?autoPlay=true&theme=E50914`,
-  },
-  {
+this is for   {
     id: 'vidsrc',
     name: 'VidSrc',
     movie: (id) => `https://vidsrc.me/embed/movie?tmdb=${id}`,

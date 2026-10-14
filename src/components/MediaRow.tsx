@@ -25,12 +25,12 @@ function RowHeader({
 }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-4 px-[4%] max-md:px-[3%]">
-      <h2 className="text-lg font-bold tracking-tight text-white">{title}</h2>
+      <h2 className="min-w-0 truncate text-base sm:text-lg font-bold tracking-tight text-white">{title}</h2>
       {showSeeAll && onSeeAll && (
         <button
           type="button"
           onClick={onSeeAll}
-          className="shrink-0 text-xs font-semibold text-joyflix-red transition-colors hover:text-white hover:underline"
+          className="shrink-0 -my-2 py-2 pl-2 text-xs font-semibold text-joyflix-red transition-colors hover:text-white hover:underline"
         >
           See all
         </button>

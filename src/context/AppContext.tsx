@@ -19,8 +19,11 @@ import type {
   ViewMode,
 } from '../lib/types';
 import {
+  isStubItem,
   isTV,
+  navUrl,
   normalizeMediaType,
+  parseNavUrl,
   pushNav,
   slimItem,
 } from '../lib/utils';
@@ -86,6 +89,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const settingsOpen = useSettingsStore((s) => s.settingsOpen);
 
   const skipPushRef = useRef(false);
+  const restoredRef = useRef(false);
+  const seasonRef = useRef(1);
+  const episodeRef = useRef(1);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -105,6 +111,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<string | null>(null);
   const [navbarScrolled, setNavbarScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    seasonRef.current = selectedSeason;
+    episodeRef.current = selectedEpisode;
+  }, [selectedSeason, selectedEpisode]);
 
   const browseEnabled = viewMode === 'browse';
   const { data: browseData, isLoading: rowsLoading } = useBrowseRows(currentTab, browseEnabled);
@@ -227,7 +238,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const playItem = useCallback((item: MediaItem) => {
-    pushNav({ type: 'player', item: slimItem(item) }, skipPushRef.current);
+    pushNav(
+      { type: 'player', item: slimItem(item), season: seasonRef.current, episode: episodeRef.current },
+      skipPushRef.current,
+    );
     setModalOpen(false);
     setModalItem(null);
     setPlayerItem(item);
@@ -273,51 +287,98 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const historyBack = useCallback(() => history.back(), []);
 
   useEffect(() => {
-    if (window.__TAURI_INTERNALS__) {
-      document.documentElement.classList.add('tauri');
-    }
-    history.replaceState({ type: 'tab', tab: 'home' }, '');
-  }, []);
-
-  useEffect(() => {
     const onScroll = () => setNavbarScrolled(getScrollY() > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    const onPopState = (e: PopStateEvent) => {
-      const state = e.state as HistoryState | null;
-      skipPushRef.current = true;
-      try {
-        if (!state || state.type === 'tab') {
-          const tab = state?.tab || 'home';
-          closePlayer();
-          closeModal();
-          setSearchOpen(false);
-          setSearchQueryState('');
-          setDebouncedSearch('');
-          setViewMode('browse');
-          setGridState(null);
-          setCurrentGenreId(null);
-          setCurrentTab(tab);
-        } else if (state.type === 'grid') {
-          closePlayer();
-          closeModal();
-          openGridPageInternal(state.title, state.endpoint, state.genreId, state.extraParams || {}, false);
-        } else if (state.type === 'modal') {
-          closePlayer();
-          openModal(state.item);
-        } else if (state.type === 'player') {
-          playItem(state.item);
-        }
-      } finally {
-        skipPushRef.current = false;
+  /** Apply a nav state without pushing history (used by back/forward and restore-on-load). */
+  const applyNavState = useCallback((state: HistoryState | null) => {
+    skipPushRef.current = true;
+    try {
+      if (!state || state.type === 'tab') {
+        const tab = state?.tab || 'home';
+        closePlayer();
+        closeModal();
+        setSearchOpen(false);
+        setSearchQueryState('');
+        setDebouncedSearch('');
+        setViewMode('browse');
+        setGridState(null);
+        setCurrentGenreId(null);
+        setCurrentTab(tab);
+      } else if (state.type === 'grid') {
+        closePlayer();
+        closeModal();
+        setCurrentGenreId(state.genreId);
+        openGridPageInternal(state.title, state.endpoint, state.genreId, state.extraParams || {}, false);
+      } else if (state.type === 'modal') {
+        closePlayer();
+        openModal(state.item);
+      } else if (state.type === 'player') {
+        playItem(state.item);
+        setSelectedSeason(state.season ?? 1);
+        setSelectedEpisode(state.episode ?? 1);
       }
-    };
+    } finally {
+      skipPushRef.current = false;
+    }
+  }, [closeModal, closePlayer, openGridPageInternal, openModal, playItem]);
+
+  useEffect(() => {
+    const onPopState = (e: PopStateEvent) => applyNavState(e.state as HistoryState | null);
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [closeModal, closePlayer, openGridPageInternal, openModal, playItem]);
+  }, [applyNavState]);
+
+  // Restore the view on load: history.state survives a refresh; otherwise fall back to the URL
+  // (shared link / new tab), seeding a home entry underneath so Back/close stays in the app.
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    if (window.__TAURI_INTERNALS__) {
+      document.documentElement.classList.add('tauri');
+    }
+
+    const home: HistoryState = { type: 'tab', tab: 'home' };
+    const saved = history.state as HistoryState | null;
+    const target = saved?.type ? saved : parseNavUrl(location.search);
+
+    if (!target || (target.type === 'tab' && target.tab === 'home')) {
+      history.replaceState(home, '', navUrl(home));
+      return;
+    }
+    if (saved?.type) {
+      history.replaceState(saved, '', navUrl(saved));
+    } else {
+      history.replaceState(home, '', navUrl(home));
+      history.pushState(target, '', navUrl(target));
+    }
+
+    if (!('item' in target) || !isStubItem(target.item)) {
+      applyNavState(target);
+      return;
+    }
+
+    const type = target.item.media_type === 'tv' ? 'tv' : 'movie';
+    const { primaryLang, region } = getSettingsSnapshot();
+    tmdbFetch(`/${type}/${target.item.id}`, {}, primaryLang, region)
+      .then((data) => {
+        const details = data as unknown as MediaItem & { genres?: { id: number }[] };
+        const item: MediaItem = {
+          ...details,
+          media_type: type,
+          genre_ids: details.genre_ids ?? details.genres?.map((g) => g.id),
+        };
+        const full = { ...target, item } as HistoryState;
+        history.replaceState({ ...full, item: slimItem(item) }, '', navUrl(full));
+        applyNavState(full);
+      })
+      .catch(() => {
+        history.back();
+        showToast('Could not load that title');
+      });
+  }, [applyNavState, showToast]);
 
   useEffect(() => {
     if (viewMode !== 'grid' || !gridState || !gridHasMore || gridValidating) return;

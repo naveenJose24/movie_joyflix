@@ -22,7 +22,7 @@ export function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-[900] flex items-center gap-8 px-[4%] h-[68px] transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-[900] flex items-center gap-3 md:gap-8 px-[4%] max-md:px-[3%] h-[68px] transition-all duration-300 ${
         navbarScrolled
           ? 'bg-[rgba(20,20,20,0.92)] backdrop-blur-xl shadow-[0_1px_0_rgba(255,255,255,0.05)]'
           : 'bg-gradient-to-b from-black/85 to-transparent'
@@ -31,7 +31,7 @@ export function Navbar() {
       <button
         type="button"
         onClick={goHome}
-        className="flex items-center gap-1.5 text-[1.8rem] font-black tracking-tight text-joyflix-red shrink-0"
+        className={`flex items-center gap-1.5 text-[1.5rem] md:text-[1.8rem] font-black tracking-tight text-joyflix-red shrink-0 ${searchOpen ? 'max-[420px]:hidden' : ''}`}
         aria-label="JoyFlix Home"
       >
         <FilmStrip weight="fill" size={22} />
@@ -54,16 +54,17 @@ export function Navbar() {
         ))}
       </ul>
 
-      <div className="flex items-center gap-4 ml-auto shrink-0">
-        <div className="relative flex items-center">
+      <div className="flex items-center gap-2 md:gap-4 ml-auto min-w-0">
+        <div className="relative flex items-center min-w-0">
           <button
             type="button"
             onClick={() => {
               setSearchOpen(!searchOpen);
               if (searchOpen) setSearchQuery('');
             }}
-            className="absolute left-2 z-10 text-neutral-400 hover:text-white"
+            className="absolute left-0 z-10 w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-white"
             title="Search"
+            aria-label="Search"
           >
             <MagnifyingGlass size={16} />
           </button>
@@ -73,21 +74,22 @@ export function Navbar() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search movies, shows…"
             autoComplete="off"
-            className={`bg-black/75 border border-white/20 text-white text-sm rounded pl-9 pr-3 py-1.5 font-[inherit] transition-all duration-400 placeholder:text-neutral-500 ${
-              searchOpen ? 'w-[220px] md:w-[220px] max-md:w-40 opacity-100' : 'w-0 opacity-0 p-0 border-0 pointer-events-none'
+            enterKeyHint="search"
+            className={`bg-black/75 border border-white/20 text-white text-base md:text-sm rounded pl-9 pr-3 py-1.5 font-[inherit] transition-all duration-400 placeholder:text-neutral-500 outline-none focus-visible:outline-none focus:border-white/45 focus:bg-black/90 ${
+              searchOpen ? 'w-[min(220px,calc(100vw-9rem))] md:w-[260px] opacity-100' : 'w-9 opacity-0 border-transparent pointer-events-none'
             }`}
           />
         </div>
         <button
           type="button"
           onClick={openSettings}
-          className="text-neutral-400 hover:text-white text-xl p-1.5 transition-colors"
+          className="text-neutral-400 hover:text-white text-xl p-2 shrink-0 transition-colors"
           title="Settings"
           aria-label="Settings"
         >
           <GearSix size={22} />
         </button>
-        <div className="w-[34px] h-[34px] rounded-md bg-joyflix-red flex items-center justify-center font-bold text-sm tracking-wide">
+        <div className="max-sm:hidden shrink-0 w-[34px] h-[34px] rounded-md bg-joyflix-red flex items-center justify-center font-bold text-sm tracking-wide">
           JF
         </div>
       </div>
@@ -108,14 +110,14 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Main navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[850] flex bg-[rgba(12,12,12,0.98)] border-t border-white/7"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-[850] flex bg-[rgba(12,12,12,0.98)] border-t border-white/7 pb-[env(safe-area-inset-bottom)]"
     >
       {items.map(({ id, label, icon, action }) => (
         <button
           key={id}
           type="button"
           onClick={action}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-[0.62rem] font-semibold transition-colors ${
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 min-h-14 py-2 text-[0.68rem] [-webkit-tap-highlight-color:transparent] font-semibold transition-colors ${
             currentTab === id ? 'text-white' : 'text-neutral-500'
           }`}
         >

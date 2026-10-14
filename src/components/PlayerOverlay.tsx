@@ -37,20 +37,22 @@ export function PlayerOverlay() {
         playerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
     >
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-4 px-6 max-md:px-4 py-4 bg-gradient-to-b from-black/90 to-transparent">
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-4 px-6 max-md:px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-4 max-md:gap-2 bg-gradient-to-b from-black/90 to-transparent">
         <button
           type="button"
           onClick={historyBack}
-          className="flex items-center gap-2 text-white text-sm font-semibold hover:opacity-70 transition-opacity bg-transparent border-0 cursor-pointer"
+          aria-label="Back"
+          title="Back"
+          className="flex items-center justify-center w-10 h-10 -ml-2 shrink-0 rounded-full text-white hover:bg-white/10 transition-colors bg-transparent border-0 cursor-pointer"
         >
-          <ArrowLeft size={18} /> Back
+          <ArrowLeft size={22} weight="bold" />
         </button>
-        <span className="text-white font-bold flex-1 min-w-0 truncate">{displayTitle}</span>
+        <span className="text-white font-bold max-md:text-sm flex-1 min-w-0 truncate">{displayTitle}</span>
         <select
           value={providerId}
           onChange={(e) => setProviderId(e.target.value)}
           title="Switch server"
-          className="bg-white/8 border border-white/20 text-white text-xs font-semibold px-2.5 py-1.5 rounded-md cursor-pointer max-md:max-w-[110px]"
+          className="shrink-0 bg-white/8 border border-white/20 text-white text-xs font-semibold px-2.5 py-2 rounded-md cursor-pointer max-md:max-w-[120px]"
         >
           {PROVIDERS.map((p) => (
             <option key={p.id} value={p.id} className="bg-[#181818]">{p.name}</option>

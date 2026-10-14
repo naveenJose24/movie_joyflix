@@ -69,6 +69,8 @@ export interface ModalNavState {
 export interface PlayerNavState {
   type: 'player';
   item: MediaItem;
+  season?: number;
+  episode?: number;
 }
 
 export type HistoryState = NavState | GridNavState | ModalNavState | PlayerNavState;

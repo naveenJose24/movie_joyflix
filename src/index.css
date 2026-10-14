@@ -10,6 +10,9 @@
 @layer base {
   html {
     height: auto;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
   }
 
   html.lenis,
@@ -112,6 +115,20 @@
   @media (max-width: 768px) {
     .media-row-scroll {
       padding-inline: 3%;
+      gap: 0.5rem;
+    }
+  }
+
+  /* Touch devices: snap rows to cards, no grab cursor */
+  @media (pointer: coarse) {
+    .media-row-scroll {
+      cursor: auto;
+      scroll-snap-type: x proximity;
+      scroll-padding-inline: 3%;
+    }
+
+    .media-row-scroll > * {
+      scroll-snap-align: start;
     }
   }
 

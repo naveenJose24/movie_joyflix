@@ -10,13 +10,13 @@ export function SearchResults() {
 
   return (
     <div className="pt-20 max-md:pt-[90px] px-[4%] max-md:px-[3%] pb-16 max-md:pb-[calc(4rem+72px)]">
-      <p className="text-lg font-bold mb-5 text-neutral-400">
+      <p className="text-base sm:text-lg font-bold mb-4 sm:mb-5 text-neutral-400 break-words">
         Results for: <span className="text-white">&quot;{searchQuery}&quot;</span>
       </p>
       {searchLoading ? (
         <Spinner />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5">
+        <div className="grid grid-cols-3 sm:grid-cols-[repeat(auto-fill,minmax(150px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-2 sm:gap-2.5">
           {searchResults?.length ? (
             searchResults.map((item) => (
               <MediaCard key={`${item.id}-${item.media_type}`} item={item} variant="grid" />
@@ -37,20 +37,22 @@ export function GridPage() {
 
   return (
     <div className="pt-20 max-md:pt-20 px-[4%] max-md:px-[3%] pb-16 max-md:pb-[calc(4rem+72px)]">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-2 sm:gap-3 mb-5 sm:mb-6">
         <button
           type="button"
           onClick={historyBack}
-          className="inline-flex items-center gap-1.5 border border-white/15 text-neutral-400 text-sm font-semibold px-3.5 py-1.5 rounded-md hover:text-white hover:border-white/35 transition-colors shrink-0 bg-transparent cursor-pointer"
+          aria-label="Back"
+          title="Back"
+          className="flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-neutral-300 hover:text-white hover:bg-white/10 transition-colors shrink-0 bg-transparent cursor-pointer"
         >
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={22} weight="bold" />
         </button>
-        <h2 className="text-xl font-bold text-white tracking-tight">{gridState.title}</h2>
+        <h2 className="min-w-0 truncate text-lg sm:text-xl font-bold text-white tracking-tight">{gridState.title}</h2>
       </div>
       {gridLoading && gridItems.length === 0 ? (
         <Spinner />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5">
+        <div className="grid grid-cols-3 sm:grid-cols-[repeat(auto-fill,minmax(150px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-2 sm:gap-2.5">
           {gridItems.map((item) => (
             <MediaCard key={`${item.id}-${item.media_type}`} item={item} variant="grid" />
           ))}

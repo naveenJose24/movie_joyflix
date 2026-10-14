@@ -21,19 +21,20 @@ export function SettingsModal() {
       role="dialog"
       aria-modal="true"
       aria-label="Settings"
-      className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/80 opacity-100 pointer-events-auto"
+      data-lenis-prevent
+      className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center sm:p-4 bg-black/80 opacity-100 pointer-events-auto animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && closeSettings()}
     >
-      <div className="bg-[#181818] rounded-2xl w-full max-w-[480px] border border-white/8 max-h-[90vh] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/7 shrink-0">
+      <div className="bg-[#181818] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-[520px] border border-white/8 max-h-[92dvh] sm:max-h-[min(90dvh,760px)] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-white/7 shrink-0">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <GearSix size={20} /> Settings
           </h2>
-          <button type="button" onClick={closeSettings} className="text-white bg-black/75 border border-white/15 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer">
+          <button type="button" onClick={closeSettings} aria-label="Close settings" className="text-white bg-black/75 border border-white/15 w-10 h-10 sm:w-8 sm:h-8 rounded-full flex items-center justify-center cursor-pointer">
             <X size={16} />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex flex-col gap-6 flex-1">
+        <div className="p-5 sm:p-6 overflow-y-auto overscroll-contain flex flex-col gap-6 flex-1 min-h-0">
           <div>
             <label className="text-sm font-semibold text-white block">Languages</label>
             <p className="text-xs text-neutral-400 mb-2">Select one or more. First selected = primary language for titles &amp; descriptions. Changes apply instantly.</p>
@@ -68,11 +69,11 @@ export function SettingsModal() {
             </select>
           </div>
         </div>
-        <div className="px-6 py-5 border-t border-white/7 flex justify-end shrink-0">
+        <div className="px-5 sm:px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:py-5 border-t border-white/7 flex justify-end shrink-0">
           <button
             type="button"
             onClick={closeSettings}
-            className="inline-flex items-center gap-2 bg-white text-black font-bold px-7 py-2.5 rounded-md hover:bg-white/85 transition-all"
+            className="inline-flex items-center justify-center gap-2 bg-white text-black font-bold px-7 py-3 sm:py-2.5 rounded-md hover:bg-white/85 transition-all max-sm:w-full"
           >
             <Check weight="fill" size={18} /> Done
           </button>
@@ -97,21 +98,30 @@ export function Onboarding() {
   };
 
   return (
-    <div className={`fixed inset-0 z-[2000] bg-black/97 flex items-center justify-center p-4 ${fadeOut ? 'animate-fade-out' : 'animate-fade-in'}`}>
-      <div className="bg-[#181818] rounded-[20px] p-10 max-md:p-6 max-w-[720px] w-full text-center border border-white/8 max-h-[90vh] overflow-y-auto animate-scale-in">
-        <div className="text-[2.4rem] font-black text-joyflix-red tracking-tight mb-4 flex items-center justify-center gap-1.5">
-          <FilmStrip weight="fill" size={32} /> Joy<span className="text-white">Flix</span>
+    <div
+      data-lenis-prevent
+      className={`fixed inset-0 z-[2000] bg-black/97 flex items-center justify-center p-0 sm:p-4 ${fadeOut ? 'animate-fade-out' : 'animate-fade-in'}`}
+    >
+      <div className="bg-[#181818] sm:rounded-[20px] max-w-[760px] w-full h-dvh sm:h-auto sm:max-h-[min(90dvh,820px)] [@media(max-height:520px)]:h-dvh [@media(max-height:520px)]:max-h-none [@media(max-height:520px)]:rounded-none flex flex-col text-center sm:border border-white/8 overflow-hidden animate-scale-in">
+        <div className="shrink-0 px-5 sm:px-10 pt-[max(1.5rem,env(safe-area-inset-top))] sm:pt-10 pb-4 sm:pb-6 [@media(max-height:520px)]:py-3">
+          <div className="text-[2rem] sm:text-[2.4rem] font-black text-joyflix-red tracking-tight mb-3 sm:mb-4 [@media(max-height:520px)]:hidden flex items-center justify-center gap-1.5">
+            <FilmStrip weight="fill" size={28} /> Joy<span className="text-white">Flix</span>
+          </div>
+          <h2 className="text-lg sm:text-xl font-bold text-white mb-1">Welcome! Choose your languages</h2>
+          <p className="text-neutral-400 text-[0.8rem] sm:text-sm">Select one or more — first pick sets the primary language for titles</p>
         </div>
-        <h2 className="text-xl font-bold text-white mb-1">Welcome! Choose your languages</h2>
-        <p className="text-neutral-400 text-sm mb-6">Select one or more — first pick sets the primary language for titles</p>
-        <LanguageGrid selected={pickedLangs} onChange={setPickedLangs} />
-        <button
-          type="button"
-          onClick={handleStart}
-          className="inline-flex items-center gap-2 bg-white text-black font-bold px-7 py-2.5 rounded-md hover:bg-white/85 transition-all min-w-40 mx-auto mt-2"
-        >
-          <Play weight="fill" size={18} /> Get Started
-        </button>
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-10 pb-2">
+          <LanguageGrid selected={pickedLangs} onChange={setPickedLangs} />
+        </div>
+        <div className="shrink-0 px-5 sm:px-10 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-10 [@media(max-height:520px)]:py-3 border-t border-white/7 sm:border-0 bg-[#181818]">
+          <button
+            type="button"
+            onClick={handleStart}
+            className="inline-flex items-center justify-center gap-2 bg-white text-black font-bold px-7 py-3 sm:py-2.5 rounded-md hover:bg-white/85 transition-all w-full sm:w-auto sm:min-w-40"
+          >
+            <Play weight="fill" size={18} /> Get Started
+          </button>
+        </div>
       </div>
     </div>
   );

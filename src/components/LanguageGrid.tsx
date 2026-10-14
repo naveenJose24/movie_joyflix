@@ -21,8 +21,8 @@ export function LanguageGrid({ selected, onChange, compact = false }: LanguageGr
     <div
       className={`grid gap-2 text-left ${
         compact
-          ? 'grid-cols-[repeat(auto-fill,minmax(90px,1fr))] max-h-[280px] overflow-y-auto border border-white/7 rounded-lg p-2 bg-black/20'
-          : 'grid-cols-[repeat(auto-fill,minmax(100px,1fr))] max-sm:grid-cols-3 mb-7'
+          ? 'grid-cols-3 sm:grid-cols-[repeat(auto-fill,minmax(96px,1fr))] max-h-[min(280px,40dvh)] overflow-y-auto overscroll-contain border border-white/7 rounded-lg p-2 bg-black/20'
+          : 'grid-cols-3 min-[480px]:grid-cols-4 sm:grid-cols-[repeat(auto-fill,minmax(104px,1fr))]'
       }`}
     >
       {LANGUAGES.map((l) => {
@@ -34,8 +34,9 @@ export function LanguageGrid({ selected, onChange, compact = false }: LanguageGr
             key={l.code}
             type="button"
             onClick={() => toggle(l.code)}
-            className={`relative flex flex-col items-center gap-1 rounded-lg border-2 transition-all cursor-pointer font-[inherit] ${
-              compact ? 'p-2' : 'p-3'
+            aria-pressed={sel}
+            className={`relative flex min-w-0 min-h-[64px] flex-col items-center justify-center gap-1 rounded-lg border-2 transition-all cursor-pointer font-[inherit] select-none [-webkit-tap-highlight-color:transparent] ${
+              compact ? 'p-2' : 'p-2.5 sm:p-3'
             } ${
               sel
                 ? 'border-joyflix-red bg-joyflix-red/18'
@@ -44,7 +45,7 @@ export function LanguageGrid({ selected, onChange, compact = false }: LanguageGr
           >
             {isPrimary && <span className="absolute top-1 left-1.5 text-[0.65rem] text-[#f5c518] font-bold">★</span>}
             <span className={compact ? 'text-xl' : 'text-2xl'}>{l.flag}</span>
-            <span className={`font-medium text-center text-neutral-200 ${compact ? 'text-[0.7rem]' : 'text-xs'}`}>{l.name}</span>
+            <span className={`w-full truncate font-medium text-center text-neutral-200 ${compact ? 'text-[0.7rem]' : 'text-xs'}`}>{l.name}</span>
             {sel && <span className="absolute top-1 right-1.5 text-[0.7rem] text-joyflix-red font-bold">✓</span>}
           </button>
         );

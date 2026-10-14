@@ -1,4 +1,4 @@
-import { ArrowLeft } from '@phosphor-icons/react';
+import { ArrowLeft } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { MediaCard } from './MediaCard';
 import { Spinner } from './Spinner';
@@ -10,8 +10,8 @@ export function SearchResults() {
 
   return (
     <div className="pt-20 max-md:pt-[90px] px-[4%] max-md:px-[3%] pb-16 max-md:pb-[calc(4rem+72px)]">
-      <p className="text-base sm:text-lg font-bold mb-4 sm:mb-5 text-neutral-400 break-words">
-        Results for: <span className="text-white">&quot;{searchQuery}&quot;</span>
+      <p className="font-display text-xl sm:text-2xl font-bold mb-5 sm:mb-6 text-neutral-400 break-words tracking-[-0.02em]">
+        Results for <span className="text-ink">“{searchQuery}”</span>
       </p>
       {searchLoading ? (
         <Spinner />
@@ -22,7 +22,7 @@ export function SearchResults() {
               <MediaCard key={`${item.id}-${item.media_type}`} item={item} variant="grid" />
             ))
           ) : (
-            <p className="text-neutral-500 col-span-full">No results found.</p>
+            <p className="text-neutral-400 col-span-full py-10">No matches. Try a different spelling or a shorter title.</p>
           )}
         </div>
       )}
@@ -45,9 +45,9 @@ export function GridPage() {
           title="Back"
           className="flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-neutral-300 hover:text-white hover:bg-white/10 transition-colors shrink-0 bg-transparent cursor-pointer"
         >
-          <ArrowLeft size={22} weight="bold" />
+          <ArrowLeft size={22} />
         </button>
-        <h2 className="min-w-0 truncate text-lg sm:text-xl font-bold text-white tracking-tight">{gridState.title}</h2>
+        <h2 className="min-w-0 truncate font-display text-2xl sm:text-3xl font-extrabold text-ink tracking-[-0.03em]">{gridState.title}</h2>
       </div>
       {gridLoading && gridItems.length === 0 ? (
         <Spinner />
@@ -57,7 +57,7 @@ export function GridPage() {
             <MediaCard key={`${item.id}-${item.media_type}`} item={item} variant="grid" />
           ))}
           {!gridItems.length && (
-            <p className="text-neutral-500 col-span-full">Failed to load.</p>
+            <p className="text-neutral-400 col-span-full py-10">This list didn’t load. Check your connection and go back to try again.</p>
           )}
         </div>
       )}

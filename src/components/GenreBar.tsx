@@ -13,10 +13,10 @@ export function GenreBar() {
           key={g.name}
           type="button"
           onClick={() => selectGenre(g.id, g.name)}
-          className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all border ${
+          className={`shrink-0 h-9 px-4 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
             g.id === currentGenreId
-              ? 'bg-joyflix-red border-joyflix-red text-white'
-              : 'bg-white/8 border-white/12 text-neutral-400 hover:bg-joyflix-red hover:border-joyflix-red hover:text-white'
+              ? 'bg-ink border-ink text-velvet'
+              : 'bg-surface/60 border-white/10 text-neutral-300 backdrop-blur-sm hover:border-white/35 hover:text-ink'
           }`}
         >
           {g.name}

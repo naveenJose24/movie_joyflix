@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Check, Play, Plus, X, YoutubeLogo } from '@phosphor-icons/react';
+import { Check, Clapperboard, Play, Plus, Star, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useGenreMap, useTvSeason } from '../hooks/useTmdbSwr';
 import { useInWishlist } from '../store/wishlistStore';
@@ -42,68 +42,113 @@ export function DetailModal() {
 
   const maxEpisodes = Math.min(episodeCount, 30);
 
+  const chip = (active: boolean) =>
+    `h-11 sm:w-11 sm:h-10 rounded-xl text-sm font-semibold tabular-nums border transition-colors cursor-pointer ${
+      active
+        ? 'bg-brand border-brand text-brand-ink'
+        : 'bg-surface-2/60 border-white/8 text-neutral-200 hover:border-brand/60 hover:text-ink'
+    }`;
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="modalTitle"
       data-lenis-prevent
-      className={`fixed inset-0 z-[1000] flex justify-center overflow-y-auto overscroll-contain sm:p-6 md:p-8 transition-all duration-350 ${
-        modalOpen ? 'bg-black/85 backdrop-blur-sm pointer-events-auto' : 'bg-transparent pointer-events-none'
+      className={`fixed inset-0 z-[1000] flex justify-center overflow-y-auto overscroll-contain sm:p-6 md:p-10 transition-all duration-350 ${
+        modalOpen ? 'bg-[rgba(14,9,19,0.82)] backdrop-blur-md pointer-events-auto' : 'bg-transparent pointer-events-none'
       }`}
       onClick={(e) => e.target === e.currentTarget && historyBack()}
     >
       <div
-        className={`bg-[#181818] sm:rounded-2xl max-w-[860px] w-full min-h-full sm:min-h-0 sm:my-auto h-fit overflow-hidden relative shadow-[0_30px_80px_rgba(0,0,0,0.8)] transition-all duration-380 ${
-          modalOpen ? 'scale-100 opacity-100 translate-y-0' : 'sm:scale-[0.88] opacity-0 translate-y-8'
+        className={`bg-surface sm:rounded-3xl max-w-[880px] w-full min-h-full sm:min-h-0 sm:my-auto h-fit overflow-hidden relative ring-1 ring-white/8 shadow-[0_40px_100px_rgba(8,4,12,0.7)] transition-all duration-380 ${
+          modalOpen ? 'scale-100 opacity-100 translate-y-0' : 'sm:scale-[0.94] opacity-0 translate-y-8'
         }`}
       >
         <button
           type="button"
           onClick={historyBack}
-          className="absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 z-5 w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-black/75 border border-white/15 text-white flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer"
+          className="absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 z-5 w-10 h-10 rounded-full bg-velvet/70 backdrop-blur-md border border-white/15 text-ink flex items-center justify-center hover:bg-velvet transition-colors cursor-pointer"
           title="Close"
           aria-label="Close"
         >
-          <X size={18} />
+          <X size={19} />
         </button>
 
-        <div className="relative aspect-video bg-neutral-800">
+        <div className="relative aspect-video bg-surface-2">
           <img src={backdrop} alt="" className="w-full h-full object-cover block" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#181818] to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/40 to-transparent" />
         </div>
 
-        <div className="relative -mt-10 sm:-mt-16 px-4 sm:px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-7">
-          <h2 id="modalTitle" className="text-[1.6rem] sm:text-3xl font-black leading-tight tracking-tight mb-2 text-white text-shadow-hero">{title}</h2>
-          <div className="flex flex-wrap items-center gap-3 mb-4 text-sm text-neutral-400">
-            <span className="font-bold text-[0.88rem]" style={{ color: scoreC }}>★ {score}</span>
+        <div className="relative -mt-14 sm:-mt-24 px-5 sm:px-9 pb-[max(1.75rem,env(safe-area-inset-bottom))] sm:pb-9">
+          <h2 id="modalTitle" className="font-display text-[2rem] sm:text-[2.75rem] font-extrabold leading-[0.98] tracking-[-0.03em] mb-3 text-ink text-shadow-hero text-balance">{title}</h2>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-5 text-sm text-neutral-300">
+            <span className="inline-flex items-center gap-1 font-semibold tabular-nums" style={{ color: scoreC }}>
+              <Star size={15} fill="currentColor" strokeWidth={0} /> {score}
+            </span>
             {year && <span>{year}</span>}
-            <span className="border border-white/20 px-1.5 py-0.5 rounded text-xs font-semibold">{tv ? 'TV Show' : 'Movie'}</span>
-            {modalItem.adult && <span className="border border-white/20 px-1.5 py-0.5 rounded text-xs font-semibold">18+</span>}
+            <span>{tv ? 'TV show' : 'Movie'}</span>
+            {modalItem.adult && <span className="rounded border border-white/25 px-1.5 text-xs font-semibold">18+</span>}
           </div>
-          <p className="text-sm sm:text-[0.95rem] leading-relaxed text-neutral-300 mb-5">{modalItem.overview || 'No description available.'}</p>
+
+          <div className="grid grid-cols-2 sm:flex gap-2.5 sm:gap-3 mb-6">
+            <button
+              type="button"
+              onClick={() => { closeModal(); playItem({ ...modalItem, media_type: type }); }}
+              className="col-span-2 inline-flex items-center justify-center gap-2 bg-brand text-brand-ink font-semibold h-12 px-8 rounded-full hover:brightness-110 active:scale-[0.98] transition-[filter,transform]"
+            >
+              <Play size={18} fill="currentColor" strokeWidth={0} />
+              {tv ? `Play S${selectedSeason} E${selectedEpisode}` : 'Play'}
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleWishlist({ ...modalItem, media_type: type })}
+              aria-pressed={inList}
+              className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full border border-white/20 text-ink font-semibold hover:border-white/50 active:scale-[0.98] transition-[border-color,transform]"
+            >
+              {inList ? <Check size={18} className="text-brand" /> : <Plus size={18} />}
+              {inList ? 'In My List' : 'My List'}
+            </button>
+            <button
+              type="button"
+              onClick={() => openTrailer(modalItem.id, type)}
+              className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full border border-white/20 text-ink font-semibold hover:border-white/50 active:scale-[0.98] transition-[border-color,transform]"
+            >
+              <Clapperboard size={18} /> Trailer
+            </button>
+          </div>
+
+          <p className="text-[0.95rem] sm:text-base leading-relaxed text-neutral-300 max-w-[65ch] mb-5">{modalItem.overview || 'No description available.'}</p>
+
+          {genreNames.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-7">
+              {genreNames.map((name) => (
+                <span key={name} className="rounded-full bg-white/6 px-3 py-1 text-xs font-medium text-neutral-300">
+                  {name}
+                </span>
+              ))}
+            </div>
+          )}
 
           {tv && (
-            <div>
-              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-1">Season</p>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] sm:flex sm:flex-wrap gap-2 mb-4">
+            <div className="border-t border-white/8 pt-6">
+              <h3 className="font-display text-lg font-bold text-ink mb-3">Seasons</h3>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] sm:flex sm:flex-wrap gap-2 mb-6">
                 {Array.from({ length: totalSeasons }, (_, i) => i + 1).map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => { setSelectedSeason(s); setSelectedEpisode(1); }}
-                    className={`h-11 sm:w-[38px] sm:h-[38px] rounded-md text-sm font-semibold border transition-colors cursor-pointer ${
-                      s === selectedSeason
-                        ? 'bg-joyflix-red border-joyflix-red text-white'
-                        : 'bg-neutral-800 border-white/8 text-neutral-200 hover:bg-joyflix-red hover:border-joyflix-red'
-                    }`}
+                    aria-pressed={s === selectedSeason}
+                    aria-label={`Season ${s}`}
+                    className={chip(s === selectedSeason)}
                   >
                     {s}
                   </button>
                 ))}
               </div>
-              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-1">Episode</p>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] sm:flex sm:flex-wrap gap-2 mb-4">
+              <h3 className="font-display text-lg font-bold text-ink mb-3">Episodes</h3>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] sm:flex sm:flex-wrap gap-2">
                 {episodesLoading ? (
                   <Spinner small />
                 ) : (
@@ -112,11 +157,9 @@ export function DetailModal() {
                       key={ep}
                       type="button"
                       onClick={() => setSelectedEpisode(ep)}
-                      className={`h-11 sm:w-[38px] sm:h-[38px] rounded-md text-sm font-semibold border transition-colors cursor-pointer ${
-                        ep === selectedEpisode
-                          ? 'bg-joyflix-red border-joyflix-red text-white'
-                          : 'bg-neutral-800 border-white/8 text-neutral-200 hover:bg-joyflix-red hover:border-joyflix-red'
-                      }`}
+                      aria-pressed={ep === selectedEpisode}
+                      aria-label={`Episode ${ep}`}
+                      className={chip(ep === selectedEpisode)}
                     >
                       {ep}
                     </button>
@@ -125,44 +168,6 @@ export function DetailModal() {
               </div>
             </div>
           )}
-
-          <div className="grid grid-cols-2 sm:flex gap-3 mb-5">
-            <button
-              type="button"
-              onClick={() => { closeModal(); playItem({ ...modalItem, media_type: type }); }}
-              className="inline-flex items-center justify-center gap-2 bg-white text-black font-bold px-7 py-3 sm:py-2.5 rounded-md hover:bg-white/85 hover:scale-[1.03] transition-all"
-            >
-              <Play weight="fill" size={18} /> Play
-            </button>
-            <button
-              type="button"
-              onClick={() => openTrailer(modalItem.id, type)}
-              className="inline-flex items-center justify-center gap-2 bg-neutral-500/70 text-white font-semibold px-6 py-3 sm:py-2.5 rounded-md hover:bg-neutral-500/50 hover:scale-[1.03] transition-all"
-            >
-              <YoutubeLogo size={18} /> Trailer
-            </button>
-            <button
-              type="button"
-              onClick={() => toggleWishlist({ ...modalItem, media_type: type })}
-              aria-pressed={inList}
-              className={`col-span-2 inline-flex items-center justify-center gap-2 font-semibold px-6 py-3 sm:py-2.5 rounded-md border transition-all hover:scale-[1.03] ${
-                inList
-                  ? 'bg-white/10 border-white/40 text-white'
-                  : 'bg-transparent border-white/25 text-white hover:border-white/60'
-              }`}
-            >
-              {inList ? <Check size={18} weight="bold" /> : <Plus size={18} weight="bold" />}
-              {inList ? 'In My List' : 'My List'}
-            </button>
-          </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {genreNames.map((name) => (
-              <span key={name} className="bg-white/7 border border-white/10 rounded-full px-3 py-1 text-xs font-medium text-neutral-400">
-                {name}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
     </div>

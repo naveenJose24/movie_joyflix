@@ -1,9 +1,30 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-joyflix-red: #e50914;
-  --color-joyflix-bg: #141414;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Marquee palette — velvet cinema seats + theatre-bulb amber */
+  --color-velvet: #1A1322;
+  --color-surface: #251B30;
+  --color-surface-2: #31253D;
+  --color-ink: #F4EEF8;
+  --color-brand: #FFB547;
+  --color-brand-ink: #2A1806;
+  --color-coral: #FF6B6B;
+
+  /* Plum-tinted greys so every neutral-* utility sits on the velvet base */
+  --color-neutral-50: #FAF7FC;
+  --color-neutral-100: #F4EEF8;
+  --color-neutral-200: #E6DDEC;
+  --color-neutral-300: #CFC3D8;
+  --color-neutral-400: #AE9FBB;
+  --color-neutral-500: #857793;
+  --color-neutral-600: #615470;
+  --color-neutral-700: #463A53;
+  --color-neutral-800: #31253D;
+  --color-neutral-900: #251B30;
+  --color-neutral-950: #1A1322;
+
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Geist', system-ui, sans-serif;
   --card-width: clamp(118px, 14vw, 188px);
 }
 
@@ -25,11 +46,11 @@
   }
 
   body {
-    @apply bg-joyflix-bg text-neutral-200 min-h-screen overflow-x-clip font-sans antialiased;
+    @apply bg-velvet text-neutral-200 min-h-screen overflow-x-clip font-sans antialiased;
   }
 
   :focus-visible {
-    @apply outline-2 outline-white outline-offset-2;
+    @apply outline-2 outline-brand outline-offset-2;
   }
 
   ::-webkit-scrollbar {
@@ -42,7 +63,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #333;
+    background: #463A53;
     border-radius: 99px;
   }
 }
@@ -56,11 +77,16 @@
 
 @layer components {
   .text-shadow-hero {
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 2px 24px rgba(26, 19, 34, 0.85);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
   }
 
   .skeleton-shimmer {
-    background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 50%, #1e1e1e 75%);
+    background: linear-gradient(90deg, #251B30 25%, #31253D 50%, #251B30 75%);
     background-size: 200% 100%;
     animation: shimmer 1.4s infinite;
   }
@@ -84,15 +110,14 @@
     left: calc(var(--top10-gutter) * 0.05);
     bottom: 0.35rem;
     z-index: 20;
-    font-size: clamp(2.25rem, calc(var(--card-width) * 0.9), 4rem);
-    font-weight: 900;
+    font-size: clamp(2.5rem, calc(var(--card-width) * 0.95), 4.5rem);
+    font-family: var(--font-display);
+    font-weight: 800;
     line-height: 1;
-    font-style: italic;
-    letter-spacing: -0.08em;
-    color: rgba(255, 255, 255, 0.1);
-    -webkit-text-stroke: 2px rgba(255, 255, 255, 0.9);
-    paint-order: stroke fill;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+    letter-spacing: -0.06em;
+    color: rgba(255, 181, 71, 0.12);
+    -webkit-text-stroke: 2.5px var(--color-brand);
+    text-shadow: 0 4px 18px rgba(14, 9, 19, 0.9);
   }
 
   .media-row-scroll {
@@ -133,16 +158,16 @@
   }
 
   .settings-select {
-    @apply bg-neutral-800 border border-white/12 rounded-lg text-neutral-200 px-3.5 py-2.5 text-sm cursor-pointer transition-colors;
+    @apply bg-neutral-800 border border-white/12 rounded-xl text-neutral-200 px-3.5 py-2.5 text-sm cursor-pointer transition-colors;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23aaa' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23AE9FBB' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.85rem center;
     padding-right: 2.2rem;
   }
 
   .settings-select:focus {
-    @apply outline-none border-joyflix-red;
+    @apply outline-none border-brand;
   }
 
   .spinner-small {
@@ -199,6 +224,15 @@
   .top10-rank {
     font-size: clamp(2rem, calc(var(--card-width) * 0.85), 3.5rem);
     left: calc(var(--top10-gutter) * 0.08);
-    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.9);
+    -webkit-text-stroke: 2px var(--color-brand);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

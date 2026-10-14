@@ -10,9 +10,9 @@ export function imgFallback(path: string | null | undefined, size: string): stri
 }
 
 export function scoreColor(score: number): string {
-  if (score >= 7.5) return '#46d369';
-  if (score >= 6) return '#f5c518';
-  return '#e74c3c';
+  if (score >= 7.5) return '#7BE0A6';
+  if (score >= 6) return '#FFB547';
+  return '#FF8A8A';
 }
 
 export function formatDate(str?: string): string {

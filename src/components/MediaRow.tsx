@@ -1,4 +1,4 @@
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useMediaRowScroll } from '../hooks/useMediaRowScroll';
 import type { MediaItem, RowData } from '../lib/types';
@@ -26,12 +26,12 @@ function RowHeader({
 }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-4 px-[4%] max-md:px-[3%]">
-      <h2 className="min-w-0 truncate text-base sm:text-lg font-bold tracking-tight text-white">{title}</h2>
+      <h2 className="min-w-0 truncate font-display text-lg sm:text-xl font-bold tracking-[-0.02em] text-ink">{title}</h2>
       {showSeeAll && onSeeAll && (
         <button
           type="button"
           onClick={onSeeAll}
-          className="shrink-0 -my-2 py-2 pl-2 text-xs font-semibold text-joyflix-red transition-colors hover:text-white hover:underline"
+          className="shrink-0 -my-2 py-2 pl-2 text-sm font-medium text-neutral-400 transition-colors hover:text-brand"
         >
           See all
         </button>
@@ -58,12 +58,12 @@ function ScrollButton({
       aria-label={isPrev ? 'Scroll row left' : 'Scroll row right'}
       className={`absolute top-0 z-10 flex h-full w-12 items-center justify-center text-white transition-all duration-300 ${
         isPrev
-          ? 'left-0 bg-linear-to-r from-joyflix-bg via-joyflix-bg/80 to-transparent pl-1'
-          : 'right-0 bg-linear-to-l from-joyflix-bg via-joyflix-bg/80 to-transparent pr-1'
+          ? 'left-0 bg-linear-to-r from-velvet via-velvet/80 to-transparent pl-1'
+          : 'right-0 bg-linear-to-l from-velvet via-velvet/80 to-transparent pr-1'
       } ${visible ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'} max-md:hidden`}
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 backdrop-blur-sm transition-transform duration-200 hover:scale-105 hover:bg-black/75">
-        {isPrev ? <CaretLeft size={18} weight="bold" /> : <CaretRight size={18} weight="bold" />}
+      <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-surface/80 backdrop-blur-sm transition-transform duration-200 hover:scale-105 hover:bg-black/75">
+        {isPrev ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
       </span>
     </button>
   );
@@ -107,7 +107,7 @@ export function MediaRow({
 
   if (loading) {
     return (
-      <section className="media-row mb-11">
+      <section className="media-row mb-10">
         <RowHeader title={title || 'Loading…'} />
         <div className="media-row-scroll">
           {Array.from({ length: 12 }, (_, i) => (
@@ -123,7 +123,7 @@ export function MediaRow({
   const displayItems = isTop10 ? items.slice(0, 10) : items;
 
   return (
-    <section className="media-row group/row mb-11">
+    <section className="media-row group/row mb-10">
       <RowHeader title={title} showSeeAll={!!handleSeeAll} onSeeAll={handleSeeAll} />
 
       <div className="relative">

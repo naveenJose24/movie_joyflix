@@ -9,7 +9,7 @@ export function SearchResults() {
   if (viewMode !== 'search') return null;
 
   return (
-    <div className="pt-20 max-md:pt-[90px] px-[4%] max-md:px-[3%] pb-16 max-md:pb-[calc(4rem+72px)]">
+    <div className="pt-[calc(var(--nav-h)+0.75rem)] max-md:pt-[calc(var(--nav-h)+1.25rem)] px-[4%] max-md:px-[3%] pb-16 max-md:pb-[calc(4rem+72px)]">
       <p className="font-display text-xl sm:text-2xl font-bold mb-5 sm:mb-6 text-neutral-400 break-words tracking-[-0.02em]">
         Results for <span className="text-ink">“{searchQuery}”</span>
       </p>
@@ -36,7 +36,7 @@ export function GridPage() {
   if (viewMode !== 'grid' || !gridState) return null;
 
   return (
-    <div className="pt-20 max-md:pt-20 px-[4%] max-md:px-[3%] pb-16 max-md:pb-[calc(4rem+72px)]">
+    <div className="pt-[calc(var(--nav-h)+0.75rem)] px-[4%] max-md:px-[3%] pb-16 max-md:pb-[calc(4rem+72px)]">
       <div className="flex items-center gap-2 sm:gap-3 mb-5 sm:mb-6">
         <button
           type="button"

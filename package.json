@@ -40,6 +40,7 @@
     "esbuild": "^0.28.1",
     "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
-    "vite": "6"
+    "vite": "6",
+    "vite-plugin-pwa": "^2.0.0"
   }
 }

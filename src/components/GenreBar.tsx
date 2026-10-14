@@ -7,7 +7,7 @@ export function GenreBar() {
   if (viewMode === 'search' || viewMode === 'grid' || currentTab === 'list') return null;
 
   return (
-    <div className="genre-bar-scroll flex gap-2 overflow-x-auto scrollbar-none px-[4%] max-md:px-[3%] py-2.5 mt-[68px] overscroll-x-contain cursor-grab active:cursor-grabbing">
+    <div className="genre-bar-scroll flex gap-2 overflow-x-auto scrollbar-none px-[4%] max-md:px-[3%] py-2.5 mt-(--nav-h) overscroll-x-contain cursor-grab active:cursor-grabbing">
       {ALL_GENRES.map((g) => (
         <button
           key={g.name}

@@ -28,6 +28,11 @@
   --card-width: clamp(118px, 14vw, 188px);
 }
 
+:root {
+  /* Top bar height incl. the status bar / notch in the installed iPhone app */
+  --nav-h: calc(68px + env(safe-area-inset-top));
+}
+
 @layer base {
   html {
     height: auto;

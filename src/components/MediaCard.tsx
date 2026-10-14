@@ -36,7 +36,7 @@ export function MediaCard({ item, variant = 'row', className = '' }: MediaCardPr
           className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset"
           aria-label={`View details for ${title}`}
         >
-          <img
+          <img crossOrigin="anonymous"
             src={poster}
             alt=""
             loading="lazy"

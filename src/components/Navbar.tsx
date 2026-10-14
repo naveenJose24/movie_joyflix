@@ -27,7 +27,7 @@ export function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-[900] flex items-center gap-3 md:gap-10 px-[4%] max-md:px-[3%] h-[68px] transition-[background-color,box-shadow] duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-[900] flex items-center gap-3 md:gap-10 pl-[max(4%,env(safe-area-inset-left))] pr-[max(4%,env(safe-area-inset-right))] max-md:pl-[max(3%,env(safe-area-inset-left))] max-md:pr-[max(3%,env(safe-area-inset-right))] pt-[env(safe-area-inset-top)] h-(--nav-h) transition-[background-color,box-shadow] duration-300 ${
         navbarScrolled
           ? 'bg-velvet/90 backdrop-blur-xl shadow-[0_1px_0_rgba(244,238,248,0.06)]'
           : 'bg-linear-to-b from-velvet/90 to-transparent'

@@ -1,4 +1,6 @@
+import { WifiOff } from 'lucide-react';
 import { useApp } from './context/AppContext';
+import { useOnline } from './hooks/useOnline';
 import { BottomNav, Navbar } from './components/Navbar';
 import { GenreBar } from './components/GenreBar';
 import { Hero } from './components/Hero';
@@ -23,6 +25,20 @@ function ToastBanner() {
   );
 }
 
+function OfflineBanner() {
+  const online = useOnline();
+  if (online) return null;
+  return (
+    <div
+      role="status"
+      className="fixed top-[calc(var(--nav-h)+0.5rem)] left-1/2 -translate-x-1/2 z-[950] flex items-center gap-2 whitespace-nowrap rounded-full bg-surface-2/95 backdrop-blur-xl ring-1 ring-white/10 px-4 py-2 text-[0.8rem] font-medium text-neutral-200 shadow-[0_12px_32px_rgba(8,4,12,0.5)]"
+    >
+      <WifiOff size={15} className="shrink-0 text-brand" />
+      Offline. Showing saved pages.
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <>
@@ -37,6 +53,7 @@ export default function App() {
       <SettingsModal />
       <Onboarding />
       <ToastBanner />
+      <OfflineBanner />
       <BottomNav />
     </>
   );

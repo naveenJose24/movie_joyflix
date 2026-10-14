@@ -76,7 +76,7 @@ export function DetailModal() {
         </button>
 
         <div className="relative aspect-video bg-surface-2">
-          <img src={backdrop} alt="" className="w-full h-full object-cover block" />
+          <img crossOrigin="anonymous" src={backdrop} alt="" className="w-full h-full object-cover block" />
           <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/40 to-transparent" />
         </div>
 

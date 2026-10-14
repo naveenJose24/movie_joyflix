@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, WifiOff } from 'lucide-react';
+import { useOnline } from '../hooks/useOnline';
 import { PROVIDERS } from '../lib/constants';
 import { useApp } from '../context/AppContext';
 import { useSettingsStore } from '../store/settingsStore';
@@ -14,6 +15,7 @@ export function PlayerOverlay() {
   const setProviderId = useSettingsStore((s) => s.setProviderId);
 
   const [iframeSrc, setIframeSrc] = useState('');
+  const online = useOnline();
 
   useEffect(() => {
     if (playerOpen && playerItem) {
@@ -59,6 +61,13 @@ export function PlayerOverlay() {
           ))}
         </select>
       </div>
+      {!online && (
+        <div className="absolute inset-0 z-[5] flex flex-col items-center justify-center gap-3 px-8 text-center bg-velvet">
+          <WifiOff size={40} strokeWidth={1.5} className="text-brand" />
+          <p className="font-display text-xl font-bold text-ink">Playing needs a connection</p>
+          <p className="text-sm text-neutral-400 max-w-[36ch]">Connect to Wi‑Fi or mobile data and this will start automatically.</p>
+        </div>
+      )}
       <iframe
         src={iframeSrc}
         title={displayTitle}

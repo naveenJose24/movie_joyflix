@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, WifiOff } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, ShieldOff, WifiOff } from 'lucide-react';
 import { useOnline } from '../hooks/useOnline';
 import { PROVIDERS } from '../lib/constants';
 import { useApp } from '../context/AppContext';
@@ -13,6 +13,8 @@ export function PlayerOverlay() {
   } = useApp();
   const providerId = useSettingsStore((s) => s.providerId);
   const setProviderId = useSettingsStore((s) => s.setProviderId);
+  const blockPopups = useSettingsStore((s) => !s.popupAllowed.includes(s.providerId));
+  const togglePopupBlock = useSettingsStore((s) => s.togglePopupBlock);
 
   const [iframeSrc, setIframeSrc] = useState('');
   const online = useOnline();
@@ -50,6 +52,22 @@ export function PlayerOverlay() {
           <ArrowLeft size={22} />
         </button>
         <span className="font-display text-ink font-bold max-md:text-sm flex-1 min-w-0 truncate">{displayTitle}</span>
+        <button
+          type="button"
+          onClick={() => togglePopupBlock(providerId)}
+          aria-pressed={blockPopups}
+          title={blockPopups
+            ? 'Pop-up blocking on. If this server won’t play, tap to turn it off for this server.'
+            : 'Pop-up blocking off for this server. Tap to turn it back on.'}
+          className={`shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-full border text-xs font-semibold backdrop-blur-md transition-colors ${
+            blockPopups
+              ? 'border-brand/50 bg-brand/15 text-brand'
+              : 'border-white/20 bg-velvet/70 text-neutral-300'
+          }`}
+        >
+          {blockPopups ? <ShieldCheck size={15} /> : <ShieldOff size={15} />}
+          <span className="max-sm:hidden">{blockPopups ? 'Pop-ups blocked' : 'Pop-ups allowed'}</span>
+        </button>
         <select
           value={providerId}
           onChange={(e) => setProviderId(e.target.value)}
@@ -69,6 +87,10 @@ export function PlayerOverlay() {
         </div>
       )}
       <iframe
+        // Remount when the sandbox changes; browsers ignore sandbox edits on a loaded frame
+        key={`${providerId}-${blockPopups ? 'sandboxed' : 'open'}`}
+        // Without allow-popups / allow-top-navigation the player can't open ad tabs or redirect the app
+        sandbox={blockPopups ? 'allow-scripts allow-same-origin allow-forms allow-presentation' : undefined}
         src={iframeSrc}
         title={displayTitle}
         allowFullScreen

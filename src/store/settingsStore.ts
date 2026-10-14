@@ -4,6 +4,7 @@ import {
   LANGS_STORE,
   LANG_STORE,
   LANGUAGES,
+  POPUP_ALLOW_STORE,
   PROVIDER_STORE,
   REGION_STORE,
   WELCOMED_KEY,
@@ -14,6 +15,15 @@ function readLangs(): string[] {
     return JSON.parse(localStorage.getItem(LANGS_STORE) || '["en-US"]');
   } catch {
     return ['en-US'];
+  }
+}
+
+function readPopupAllow(): string[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(POPUP_ALLOW_STORE) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
   }
 }
 
@@ -30,6 +40,9 @@ interface SettingsState {
   settingsOpen: boolean;
   contentRevision: number;
   primaryLang: string;
+  /** Servers the user let open pop-ups/redirects (pop-up blocking is on for every other server). */
+  popupAllowed: string[];
+  togglePopupBlock: (providerId: string) => void;
   setLangs: (langs: string[]) => void;
   setRegion: (region: string) => void;
   setProviderId: (providerId: string) => void;
@@ -49,6 +62,16 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     settingsOpen: false,
     contentRevision: 0,
     primaryLang: initialLangs[0],
+    popupAllowed: readPopupAllow(),
+
+    togglePopupBlock: (providerId) => {
+      const current = get().popupAllowed;
+      const next = current.includes(providerId)
+        ? current.filter((id) => id !== providerId)
+        : [...current, providerId];
+      localStorage.setItem(POPUP_ALLOW_STORE, JSON.stringify(next));
+      set({ popupAllowed: next });
+    },
 
     setLangs: (langs) => {
       const next = langs.length ? langs : ['en-US'];

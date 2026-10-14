@@ -1,4 +1,4 @@
-export type Tab = 'home' | 'movies' | 'tv' | 'trending';
+export type Tab = 'home' | 'movies' | 'tv' | 'trending' | 'list';
 export type MediaType = 'movie' | 'tv';
 export type ViewMode = 'browse' | 'search' | 'grid';
 

@@ -2,9 +2,9 @@ import { ALL_GENRES } from '../lib/constants';
 import { useApp } from '../context/AppContext';
 
 export function GenreBar() {
-  const { currentGenreId, selectGenre, viewMode } = useApp();
+  const { currentGenreId, currentTab, selectGenre, viewMode } = useApp();
 
-  if (viewMode === 'search' || viewMode === 'grid') return null;
+  if (viewMode === 'search' || viewMode === 'grid' || currentTab === 'list') return null;
 
   return (
     <div className="genre-bar-scroll flex gap-2 overflow-x-auto scrollbar-none px-[4%] max-md:px-[3%] py-2.5 mt-[68px] overscroll-x-contain cursor-grab active:cursor-grabbing">

@@ -3,9 +3,9 @@ import { useApp } from '../context/AppContext';
 import { formatDate, img, isTV, scoreColor } from '../lib/utils';
 
 export function Hero() {
-  const { heroItem, playItem, openModal, viewMode } = useApp();
+  const { heroItem, playItem, openModal, viewMode, currentTab } = useApp();
 
-  if (viewMode !== 'browse' || !heroItem) return null;
+  if (viewMode !== 'browse' || currentTab === 'list' || !heroItem) return null;
 
   const tv = isTV(heroItem);
   const title = heroItem.title || heroItem.name || 'Unknown';

@@ -9,6 +9,7 @@ export const LANG_STORE = 'joyflix_lang';
 export const LANGS_STORE = 'joyflix_langs';
 export const REGION_STORE = 'joyflix_region';
 export const WELCOMED_KEY = 'joyflix_welcomed';
+export const WISHLIST_STORE = 'joyflix_wishlist';
 
 export const DEFAULT_PROVIDER = 'vidlink';
 

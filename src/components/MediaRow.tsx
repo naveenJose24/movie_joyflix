@@ -12,6 +12,7 @@ interface MediaRowProps {
   params?: Record<string, string | number>;
   variant?: 'default' | 'top10';
   loading?: boolean;
+  onSeeAll?: () => void;
 }
 
 function RowHeader({
@@ -89,6 +90,7 @@ export function MediaRow({
   params: paramsProp,
   variant = 'default',
   loading = false,
+  onSeeAll,
 }: MediaRowProps) {
   const { openGridPage } = useApp();
   const { scrollerRef, canPrev, canNext, scrollByPage } = useMediaRowScroll();
@@ -99,9 +101,9 @@ export function MediaRow({
   const params = row?.params ?? paramsProp ?? {};
   const isTop10 = variant === 'top10' || row?.top10;
 
-  const handleSeeAll = endpoint
+  const handleSeeAll = onSeeAll ?? (endpoint
     ? () => openGridPage(title, endpoint, null, params)
-    : undefined;
+    : undefined);
 
   if (loading) {
     return (
@@ -122,7 +124,7 @@ export function MediaRow({
 
   return (
     <section className="media-row group/row mb-11">
-      <RowHeader title={title} showSeeAll={!!endpoint} onSeeAll={handleSeeAll} />
+      <RowHeader title={title} showSeeAll={!!handleSeeAll} onSeeAll={handleSeeAll} />
 
       <div className="relative">
         <ScrollButton direction="prev" visible={canPrev} onClick={() => scrollByPage('prev')} />

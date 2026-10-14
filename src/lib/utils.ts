@@ -51,7 +51,7 @@ export function slimItem(item: MediaItem): MediaItem {
   };
 }
 
-const TABS: Tab[] = ['home', 'movies', 'tv', 'trending'];
+const TABS: Tab[] = ['home', 'movies', 'tv', 'trending', 'list'];
 
 /** URL (path + query) that represents a nav state, so refresh / shared links reopen it. */
 export function navUrl(state: HistoryState): string {

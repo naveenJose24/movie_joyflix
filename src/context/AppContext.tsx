@@ -32,6 +32,7 @@ import { useBrowseRows, useGridPages, useSearchResults, useTvDetails } from '../
 import { useGlobalHorizontalScroll } from '../hooks/useHorizontalScroll';
 import { getScrollY, scrollToTop } from '../lib/scroll';
 import { getSettingsSnapshot, useSettingsStore } from '../store/settingsStore';
+import { useWishlistStore } from '../store/wishlistStore';
 
 interface AppContextValue {
   currentTab: Tab;
@@ -73,6 +74,7 @@ interface AppContextValue {
   openTrailer: (id: number, type: 'movie' | 'tv') => void;
   getPlayerUrl: () => string;
   historyBack: () => void;
+  toggleWishlist: (item: MediaItem) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -117,7 +119,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     episodeRef.current = selectedEpisode;
   }, [selectedSeason, selectedEpisode]);
 
-  const browseEnabled = viewMode === 'browse';
+  const browseEnabled = viewMode === 'browse' && currentTab !== 'list';
   const { data: browseData, isLoading: rowsLoading } = useBrowseRows(currentTab, browseEnabled);
   const rows = browseData?.rows ?? null;
   const heroItem = browseData?.hero ?? null;
@@ -286,6 +288,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const historyBack = useCallback(() => history.back(), []);
 
+  const toggleWishlist = useCallback((item: MediaItem) => {
+    const added = useWishlistStore.getState().toggle(item);
+    showToast(added ? 'Added to My List' : 'Removed from My List', 1800);
+  }, [showToast]);
+
   useEffect(() => {
     const onScroll = () => setNavbarScrolled(getScrollY() > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -411,7 +418,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSearchOpen, setSearchQuery, switchTab, goHome, selectGenre, openGridPage,
     openModal, closeModal, playItem, closePlayer, setSelectedSeason, setSelectedEpisode,
     openTrailer, getPlayerUrl,
-    historyBack,
+    historyBack, toggleWishlist,
   }), [
     currentTab, viewMode, currentGenreId, heroItem, rows, rowsLoading,
     searchQuery, searchResults, searchLoading, gridState, gridItems, gridLoading, gridHasMore,
@@ -420,7 +427,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     navbarScrolled, searchOpen,
     setSearchQuery, switchTab, goHome, selectGenre, openGridPage,
     openModal, closeModal, playItem, closePlayer,
-    openTrailer, getPlayerUrl, historyBack,
+    openTrailer, getPlayerUrl, historyBack, toggleWishlist,
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

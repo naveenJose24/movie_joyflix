@@ -1,5 +1,5 @@
 import {
-  FilmStrip, FireSimple, GearSix, HouseSimple, MagnifyingGlass,
+  BookmarkSimple, FilmStrip, FireSimple, GearSix, HouseSimple, MagnifyingGlass,
   TelevisionSimple, FilmSlate,
 } from '@phosphor-icons/react';
 import { useApp } from '../context/AppContext';
@@ -11,6 +11,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'movies', label: 'Movies' },
   { id: 'tv', label: 'TV Shows' },
   { id: 'trending', label: 'Trending' },
+  { id: 'list', label: 'My List' },
 ];
 
 export function Navbar() {
@@ -105,6 +106,7 @@ export function BottomNav() {
     { id: 'movies', label: 'Movies', icon: <FilmSlate weight="fill" size={22} />, action: () => switchTab('movies') },
     { id: 'tv', label: 'TV Shows', icon: <TelevisionSimple weight="fill" size={22} />, action: () => switchTab('tv') },
     { id: 'trending', label: 'Trending', icon: <FireSimple weight="fill" size={22} />, action: () => switchTab('trending') },
+    { id: 'list', label: 'My List', icon: <BookmarkSimple weight="fill" size={22} />, action: () => switchTab('list') },
   ];
 
   return (

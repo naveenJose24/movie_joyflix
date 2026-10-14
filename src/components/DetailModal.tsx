@@ -1,15 +1,17 @@
 import { useMemo } from 'react';
-import { Play, X, YoutubeLogo } from '@phosphor-icons/react';
+import { Check, Play, Plus, X, YoutubeLogo } from '@phosphor-icons/react';
 import { useApp } from '../context/AppContext';
 import { useGenreMap, useTvSeason } from '../hooks/useTmdbSwr';
+import { useInWishlist } from '../store/wishlistStore';
 import { Spinner } from './Spinner';
 import { formatDate, getTitle, img, imgFallback, isTV, scoreColor } from '../lib/utils';
 
 export function DetailModal() {
   const {
     modalOpen, modalItem, closeModal, playItem, openTrailer, historyBack,
-    selectedSeason, selectedEpisode, totalSeasons, setSelectedSeason, setSelectedEpisode,
+    selectedSeason, selectedEpisode, totalSeasons, setSelectedSeason, setSelectedEpisode, toggleWishlist,
   } = useApp();
+  const inList = useInWishlist(modalItem);
 
   const tv = modalItem ? isTV(modalItem) : false;
   const type = tv ? 'tv' as const : 'movie' as const;
@@ -138,6 +140,19 @@ export function DetailModal() {
               className="inline-flex items-center justify-center gap-2 bg-neutral-500/70 text-white font-semibold px-6 py-3 sm:py-2.5 rounded-md hover:bg-neutral-500/50 hover:scale-[1.03] transition-all"
             >
               <YoutubeLogo size={18} /> Trailer
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleWishlist({ ...modalItem, media_type: type })}
+              aria-pressed={inList}
+              className={`col-span-2 inline-flex items-center justify-center gap-2 font-semibold px-6 py-3 sm:py-2.5 rounded-md border transition-all hover:scale-[1.03] ${
+                inList
+                  ? 'bg-white/10 border-white/40 text-white'
+                  : 'bg-transparent border-white/25 text-white hover:border-white/60'
+              }`}
+            >
+              {inList ? <Check size={18} weight="bold" /> : <Plus size={18} weight="bold" />}
+              {inList ? 'In My List' : 'My List'}
             </button>
           </div>
 

@@ -68,6 +68,18 @@ export const PROVIDERS: Provider[] = [
     tv: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=E50914&autoplay=true`,
   },
   {
+    id: 'cinesrc',
+    name: 'CineSrc',
+    movie: (id) => `https://cinesrc.st/embed/movie/${id}?color=%23e50914`,
+    tv: (id, s, e) => `https://cinesrc.st/embed/tv/${id}?s=${s}&e=${e}&color=%23e50914`,
+  },
+  {
+    id: 'mapple',
+    name: 'Mapple Player',
+    movie: (id) => `https://mapple.fun/watch/movie/${id}?autoPlay=true&theme=E50914`,
+    tv: (id, s, e) => `https://mapple.fun/watch/tv/${id}-${s}-${e}?autoPlay=true&theme=E50914`,
+  },
+  {
     id: 'vidsrc',
     name: 'VidSrc',
     movie: (id) => `https://vidsrc.me/embed/movie?tmdb=${id}`,
